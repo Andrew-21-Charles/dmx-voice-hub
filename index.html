@@ -32,18 +32,21 @@
         header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .logo {
             font-size: 1rem;
             font-weight: bold;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             color: var(--cyan);
             text-shadow: 0 0 12px var(--cyan);
+            white-space: nowrap;
         }
         .logo em {
             color: var(--magenta);
@@ -74,11 +77,11 @@
         /* ── MAIN GRID ───────────────────────────── */
         main {
             flex: 1;
-            padding: 20px;
+            padding: 16px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 16px;
-            max-width: 860px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
         }
@@ -88,51 +91,51 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 20px;
+            padding: 18px;
         }
         .card-title {
             font-size: 0.65rem;
             letter-spacing: 3px;
             color: var(--dim);
             text-transform: uppercase;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         /* ── BLE PANEL ───────────────────────────── */
-        #ble-panel { grid-column: 1; }
+        #ble-panel { grid-column: span 1; }
 
         #connect-btn {
             width: 100%;
-            padding: 13px;
+            padding: 12px;
             background: transparent;
             border: 2px solid var(--cyan);
             color: var(--cyan);
             font-family: inherit;
-            font-size: 0.85rem;
-            letter-spacing: 3px;
+            font-size: 0.82rem;
+            letter-spacing: 2px;
             cursor: pointer;
             border-radius: 6px;
             transition: all 0.2s;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         #connect-btn:hover       { background: rgba(0,255,204,.08); box-shadow: 0 0 14px rgba(0,255,204,.25); }
         #connect-btn.disco       { border-color: var(--red); color: var(--red); }
         #connect-btn.disco:hover { background: rgba(255,68,68,.08); box-shadow: 0 0 14px rgba(255,68,68,.25); }
         #connect-btn:disabled    { opacity: .35; cursor: not-allowed; }
 
-        .info-row { font-size: 0.75rem; color: var(--dim); line-height: 2; }
+        .info-row { font-size: 0.75rem; color: var(--dim); line-height: 1.8; word-break: break-all; }
         .info-row span { color: var(--text); }
 
         /* ── VOICE PANEL ─────────────────────────── */
         #voice-panel {
-            grid-column: 2;
+            grid-column: span 1;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
         #mic-btn {
-            width: 96px; height: 96px;
+            width: 88px; height: 88px;
             border-radius: 50%;
             background: var(--surface2);
             border: 3px solid var(--border);
@@ -141,8 +144,9 @@
             cursor: pointer;
             transition: all 0.2s;
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             user-select: none;
+            touch-action: manipulation;
         }
         #mic-btn:hover         { border-color: var(--cyan); color: var(--cyan); }
         #mic-btn:disabled      { opacity: .3; cursor: not-allowed; }
@@ -161,7 +165,8 @@
             font-size: 0.65rem;
             letter-spacing: 2px;
             color: var(--dim);
-            margin-bottom: 14px;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
         #transcript {
@@ -169,13 +174,14 @@
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 6px;
-            padding: 10px 14px;
-            min-height: 44px;
-            font-size: 0.82rem;
+            padding: 10px;
+            min-height: 42px;
+            font-size: 0.8rem;
             color: var(--dim);
             font-style: italic;
             text-align: center;
             transition: border-color 0.2s, color 0.2s;
+            word-break: break-word;
         }
         #transcript.active {
             border-color: var(--cyan);
@@ -183,34 +189,101 @@
             transition: border-color 0.2s, color 0.2s, background 0.6s;
         }
 
+        /* ── CUSTOM COMMAND CREATOR ───────────────── */
+        #custom-creator-panel { grid-column: 1 / -1; }
+
+        .creator-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .cmd-input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.8rem;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 120px;
+        }
+        .cmd-input:focus { border-color: var(--cyan); }
+        #custom-label { flex: 1 1 180px; }
+        #custom-cmd   { flex: 2 1 240px; }
+
+        .add-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            font-family: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex: 1 1 auto;
+            touch-action: manipulation;
+        }
+        .add-btn:hover { background: rgba(0,255,204,.1); box-shadow: 0 0 10px rgba(0,255,204,.2); }
+
         /* ── QUICK COMMANDS ──────────────────────── */
         #quick-panel { grid-column: 1 / -1; }
 
         .quick-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 10px;
         }
 
+        .qbtn-wrapper {
+            position: relative;
+            display: flex;
+            width: 100%;
+        }
+
         .qbtn {
-            padding: 16px 8px;
+            width: 100%;
+            padding: 14px 6px;
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.18s;
             display: flex; flex-direction: column;
-            align-items: center; gap: 7px;
+            align-items: center; gap: 6px;
+            touch-action: manipulation;
         }
-        .qbtn .icon { font-size: 1.5rem; }
-        .qbtn .kw   { font-size: 0.62rem; color: var(--dim); }
+        .qbtn .icon { font-size: 1.4rem; }
+        .qbtn .kw   { font-size: 0.6rem; color: var(--dim); word-break: break-all; text-align: center; }
         .qbtn:hover  { border-color: var(--cyan); background: rgba(0,255,204,.05); }
         .qbtn:active { transform: scale(.96); }
         .qbtn:disabled { opacity: .3; cursor: not-allowed; }
+
+        .del-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: none;
+            border: none;
+            color: var(--dim);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+            border-radius: 3px;
+            transition: color 0.2s, background 0.2s;
+            touch-action: manipulation;
+        }
+        .del-btn:hover { color: var(--red); background: rgba(255,68,68,0.15); }
 
         /* ── LOG PANEL ───────────────────────────── */
         #log-panel { grid-column: 1 / -1; }
@@ -223,6 +296,7 @@
             font-size: 0.65rem; letter-spacing: 1px;
             color: var(--dim); background: none; border: none;
             cursor: pointer; font-family: inherit;
+            touch-action: manipulation;
         }
         .clear-btn:hover { color: var(--text); }
 
@@ -231,7 +305,7 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             padding: 10px;
-            height: 140px;
+            height: 130px;
             overflow-y: auto;
             display: flex;
             flex-direction: column-reverse;
@@ -239,25 +313,27 @@
         }
 
         .entry {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            margin-bottom: 3px;
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            margin-bottom: 2px;
             border-left: 2px solid var(--border);
-            line-height: 1.5;
+            line-height: 1.4;
+            word-break: break-word;
         }
         .entry.sent  { border-color: var(--cyan);    color: var(--cyan); }
         .entry.err   { border-color: var(--red);     color: var(--red); }
         .entry.info  { border-color: var(--border);  color: var(--dim); }
-        .entry .ts   { opacity: .45; margin-right: 8px; }
+        .entry .ts   { opacity: .45; margin-right: 6px; }
 
         /* ── FOOTER ──────────────────────────────── */
         footer {
             text-align: center;
-            padding: 10px;
-            font-size: 0.65rem;
+            padding: 12px;
+            font-size: 0.62rem;
             color: var(--dim);
             border-top: 1px solid var(--border);
             letter-spacing: 1px;
+            line-height: 1.5;
         }
 
         /* ── SCROLLBAR ───────────────────────────── */
@@ -265,16 +341,28 @@
         ::-webkit-scrollbar-track { background: var(--surface2); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-        /* ── MOBILE RESPONSIVE ADAPTATIONS ───────── */
-        @media (max-width: 600px) {
+        /* ── RESPONSIVE MEDIA QUERIES ────────────── */
+        @media (max-width: 640px) {
             main {
                 grid-template-columns: 1fr;
+                padding: 12px;
+                gap: 12px;
             }
             #ble-panel, #voice-panel {
-                grid-column: 1;
+                grid-column: 1 / -1;
             }
             .quick-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            .creator-form {
+                flex-direction: column;
+            }
+            #custom-label, #custom-cmd, .add-btn {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+            header {
+                padding: 12px 16px;
             }
         }
     </style>
@@ -311,30 +399,48 @@
         <div id="transcript">awaiting voice input...</div>
     </div>
 
+    <!-- Add Custom Command Card -->
+    <div class="card" id="custom-creator-panel">
+        <div class="card-title">Add Custom Command</div>
+        <div class="creator-form">
+            <input type="text" id="custom-label" class="cmd-input" placeholder="Label (e.g. STROBE)" maxlength="12">
+            <input type="text" id="custom-cmd" class="cmd-input" placeholder="Command (e.g. strobe fast)">
+            <button class="add-btn" onclick="addCustomCommand()">+ SAVE COMMAND</button>
+        </div>
+    </div>
+
     <!-- Quick Commands Card -->
     <div class="card" id="quick-panel">
         <div class="card-title">Quick Commands</div>
-        <div class="quick-grid">
-            <button class="qbtn" data-cmd="scene 1" onclick="qSend(this)" disabled>
-                <span class="icon">🎉</span>
-                <span>SCENE 1</span>
-                <span class="kw">"party"</span>
-            </button>
-            <button class="qbtn" data-cmd="white" onclick="qSend(this)" disabled>
-                <span class="icon">💡</span>
-                <span>WHITE</span>
-                <span class="kw">"white"</span>
-            </button>
-            <button class="qbtn" data-cmd="blue" onclick="qSend(this)" disabled>
-                <span class="icon">🔵</span>
-                <span>BLUE</span>
-                <span class="kw">"blue"</span>
-            </button>
-            <button class="qbtn" data-cmd="blackout" onclick="qSend(this)" disabled>
-                <span class="icon">⚫</span>
-                <span>BLACKOUT</span>
-                <span class="kw">"off"</span>
-            </button>
+        <div class="quick-grid" id="quick-grid">
+            <div class="qbtn-wrapper">
+                <button class="qbtn" data-cmd="scene 1" onclick="qSend(this)" disabled>
+                    <span class="icon">🎉</span>
+                    <span>SCENE 1</span>
+                    <span class="kw">"party"</span>
+                </button>
+            </div>
+            <div class="qbtn-wrapper">
+                <button class="qbtn" data-cmd="white" onclick="qSend(this)" disabled>
+                    <span class="icon">💡</span>
+                    <span>WHITE</span>
+                    <span class="kw">"white"</span>
+                </button>
+            </div>
+            <div class="qbtn-wrapper">
+                <button class="qbtn" data-cmd="blue" onclick="qSend(this)" disabled>
+                    <span class="icon">🔵</span>
+                    <span>BLUE</span>
+                    <span class="kw">"blue"</span>
+                </button>
+            </div>
+            <div class="qbtn-wrapper">
+                <button class="qbtn" data-cmd="blackout" onclick="qSend(this)" disabled>
+                    <span class="icon">⚫</span>
+                    <span>BLACKOUT</span>
+                    <span class="kw">"off"</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -369,6 +475,7 @@ let connected  = false;
 let listening  = false;
 let recog      = null;
 let isStarting = false;
+let customCmds = [];
 
 // Cached DOM refs
 const logEl        = document.getElementById('log');
@@ -380,6 +487,7 @@ const statusDot    = document.getElementById('dot');
 const statusLbl    = document.getElementById('status-lbl');
 const iName        = document.getElementById('i-name');
 const iState       = document.getElementById('i-state');
+const quickGrid    = document.getElementById('quick-grid');
 
 // ─────────────────────────────────────────────────────
 //  Logging
@@ -518,6 +626,80 @@ function qSend(btn) {
 }
 
 // ─────────────────────────────────────────────────────
+//  Custom Commands Logic
+// ─────────────────────────────────────────────────────
+function loadCustomCommands() {
+    const saved = localStorage.getItem('dmx_custom_cmds');
+    if (saved) {
+        try {
+            customCmds = JSON.parse(saved);
+            customCmds.forEach(item => renderCustomCommand(item.label, item.cmd, false));
+        } catch (_) {}
+    }
+}
+
+function addCustomCommand() {
+    const labelInput = document.getElementById('custom-label');
+    const cmdInput   = document.getElementById('custom-cmd');
+
+    const label = labelInput.value.trim();
+    const cmd   = cmdInput.value.trim();
+
+    if (!label || !cmd) {
+        addLog('Please enter both a label and a command.', 'err');
+        return;
+    }
+
+    const newItem = { label, cmd };
+    customCmds.push(newItem);
+    localStorage.setItem('dmx_custom_cmds', JSON.stringify(customCmds));
+
+    renderCustomCommand(label, cmd, true);
+
+    labelInput.value = '';
+    cmdInput.value   = '';
+    addLog(`Saved command: "${label}" → [${cmd}]`, 'info');
+}
+
+function renderCustomCommand(label, cmd, isNew) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'qbtn-wrapper';
+
+    const btn = document.createElement('button');
+    btn.className = 'qbtn';
+    btn.setAttribute('data-cmd', cmd);
+    btn.onclick = () => qSend(btn);
+    btn.disabled = !connected;
+
+    // Updated with light icon (💡)
+    btn.innerHTML = `
+        <span class="icon">💡</span>
+        <span>${label.toUpperCase()}</span>
+        <span class="kw">"${cmd}"</span>
+    `;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn';
+    delBtn.innerHTML = '&times;';
+    delBtn.title = 'Delete command';
+    delBtn.onclick = (e) => {
+        e.stopPropagation();
+        removeCustomCommand(wrapper, label, cmd);
+    };
+
+    wrapper.appendChild(btn);
+    wrapper.appendChild(delBtn);
+    quickGrid.appendChild(wrapper);
+}
+
+function removeCustomCommand(wrapperEl, label, cmd) {
+    customCmds = customCmds.filter(c => !(c.label === label && c.cmd === cmd));
+    localStorage.setItem('dmx_custom_cmds', JSON.stringify(customCmds));
+    quickGrid.removeChild(wrapperEl);
+    addLog(`Removed command: "${label}"`, 'info');
+}
+
+// ─────────────────────────────────────────────────────
 //  Speech Recognition — Continuous & Reusable Instance
 // ─────────────────────────────────────────────────────
 function initSpeechEngine() {
@@ -558,12 +740,11 @@ function initSpeechEngine() {
     };
 
     r.onerror = (ev) => {
-        if (ev.error === 'no-speech') return; // Silence is expected, ignore
+        if (ev.error === 'no-speech') return;
         addLog('Mic error: ' + ev.error, 'err');
         if (ev.error === 'not-allowed') stopListen();
     };
 
-    // Auto-restart delay to handle Chrome timeout cleanly
     r.onend = () => {
         if (listening) {
             setTimeout(() => {
@@ -647,6 +828,8 @@ window.addEventListener('load', () => {
     } else {
         addLog('Speech Recognition ready ✓');
     }
+
+    loadCustomCommands();
 });
 </script>
 </body>
