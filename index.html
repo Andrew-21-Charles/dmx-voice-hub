@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMX Voice Hub</title>
+    <style>
+        :root {
+            --bg:       #0a0a12;
+            --surface:  #12121e;
+            --surface2: #1a1a2e;
+            --cyan:     #00ffcc;
+            --magenta:  #ff00aa;
+            --red:      #ff4444;
+            --text:     #e0e0e0;
+            --dim:      #666688;
+            --border:   #2a2a44;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: var(--cyan);
+            text-shadow: 0 0 12px var(--cyan);
+        }
+        .logo em {
+            color: var(--magenta);
+            text-shadow: 0 0 12px var(--magenta);
+            font-style: normal;
+        }
+
+        #header-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: var(--dim);
+        }
+
+        .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--dim);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .dot.on  { background: var(--cyan);    box-shadow: 0 0 8px var(--cyan);    animation: blink 2s infinite; }
+        .dot.err { background: var(--red);     box-shadow: 0 0 8px var(--red); }
+
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── MAIN GRID ───────────────────────────── */
+        main {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 860px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── CARD ────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .card-title {
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        /* ── BLE PANEL ───────────────────────────── */
+        #ble-panel { grid-column: 1; }
+
+        #connect-btn {
+            width: 100%;
+            padding: 13px;
+            background: transparent;
+            border: 2px solid var(--cyan);
+            color: var(--cyan);
+            font-family: inherit;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin-bottom: 14px;
+        }
+        #connect-btn:hover       { background: rgba(0,255,204,.08); box-shadow: 0 0 14px rgba(0,255,204,.25); }
+        #connect-btn.disco       { border-color: var(--red); color: var(--red); }
+        #connect-btn.disco:hover { background: rgba(255,68,68,.08); box-shadow: 0 0 14px rgba(255,68,68,.25); }
+        #connect-btn:disabled    { opacity: .35; cursor: not-allowed; }
+
+        .info-row { font-size: 0.75rem; color: var(--dim); line-height: 2; }
+        .info-row span { color: var(--text); }
+
+        /* ── VOICE PANEL ─────────────────────────── */
+        #voice-panel {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #mic-btn {
+            width: 96px; height: 96px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 3px solid var(--border);
+            color: var(--dim);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 14px;
+            user-select: none;
+        }
+        #mic-btn:hover         { border-color: var(--cyan); color: var(--cyan); }
+        #mic-btn:disabled      { opacity: .3; cursor: not-allowed; }
+        #mic-btn.active {
+            border-color: var(--magenta);
+            color: var(--magenta);
+            box-shadow: 0 0 24px rgba(255,0,170,.45);
+            animation: micpulse 1s infinite;
+        }
+        @keyframes micpulse {
+            0%,100%{ box-shadow: 0 0 20px rgba(255,0,170,.4); }
+            50%    { box-shadow: 0 0 38px rgba(255,0,170,.75); }
+        }
+
+        #mic-hint {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-bottom: 14px;
+        }
+
+        #transcript {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            min-height: 44px;
+            font-size: 0.82rem;
+            color: var(--dim);
+            font-style: italic;
+            text-align: center;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        #transcript.active {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            transition: border-color 0.2s, color 0.2s, background 0.6s;
+        }
+
+        /* ── QUICK COMMANDS ──────────────────────── */
+        #quick-panel { grid-column: 1 / -1; }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .qbtn {
+            padding: 16px 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 7px;
+        }
+        .qbtn .icon { font-size: 1.5rem; }
+        .qbtn .kw   { font-size: 0.62rem; color: var(--dim); }
+        .qbtn:hover  { border-color: var(--cyan); background: rgba(0,255,204,.05); }
+        .qbtn:active { transform: scale(.96); }
+        .qbtn:disabled { opacity: .3; cursor: not-allowed; }
+
+        /* ── LOG PANEL ───────────────────────────── */
+        #log-panel { grid-column: 1 / -1; }
+
+        .log-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        .clear-btn {
+            font-size: 0.65rem; letter-spacing: 1px;
+            color: var(--dim); background: none; border: none;
+            cursor: pointer; font-family: inherit;
+        }
+        .clear-btn:hover { color: var(--text); }
+
+        #log {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+        }
+
+        .entry {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            margin-bottom: 3px;
+            border-left: 2px solid var(--border);
+            line-height: 1.5;
+        }
+        .entry.sent  { border-color: var(--cyan);    color: var(--cyan); }
+        .entry.err   { border-color: var(--red);     color: var(--red); }
+        .entry.info  { border-color: var(--border);  color: var(--dim); }
+        .entry .ts   { opacity: .45; margin-right: 8px; }
+
+        /* ── FOOTER ──────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.65rem;
+            color: var(--dim);
+            border-top: 1px solid var(--border);
+            letter-spacing: 1px;
+        }
+
+        /* ── SCROLLBAR ───────────────────────────── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--surface2); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════ -->
+<header>
+    <div class="logo">⚡ DMX <em>VOICE</em> HUB</div>
+    <div id="header-status">
+        <div class="dot" id="dot"></div>
+        <span id="status-lbl">DISCONNECTED</span>
+    </div>
+</header>
+
+<!-- ═══ MAIN ══════════════════════════════════════ -->
+<main>
+
+    <!-- BLE Connection Card -->
+    <div class="card" id="ble-panel">
+        <div class="card-title">Bluetooth Connection</div>
+        <button id="connect-btn" onclick="toggleConnect()">[ CONNECT ]</button>
+        <div class="info-row">
+            Device &nbsp;: <span id="i-name">—</span><br>
+            State &nbsp;&nbsp;: <span id="i-state">idle</span>
+        </div>
+    </div>
+
+    <!-- Voice Control Card -->
+    <div class="card" id="voice-panel">
+        <div class="card-title">Voice Command</div>
+        <button id="mic-btn" onclick="toggleListen()" disabled title="Connect to ESP32 first">🎤</button>
+        <div id="mic-hint">CONNECT FIRST</div>
+        <div id="transcript">awaiting voice input...</div>
+    </div>
+
+    <!-- Quick Commands Card -->
+    <div class="card" id="quick-panel">
+        <div class="card-title">Quick Commands</div>
+        <div class="quick-grid">
+            <button class="qbtn" data-cmd="scene 1" onclick="qSend(this)" disabled>
+                <span class="icon">🎉</span>
+                <span>SCENE 1</span>
+                <span class="kw">"party"</span>
+            </button>
+            <button class="qbtn" data-cmd="white" onclick="qSend(this)" disabled>
+                <span class="icon">💡</span>
+                <span>WHITE</span>
+                <span class="kw">"white"</span>
+            </button>
+            <button class="qbtn" data-cmd="blue" onclick="qSend(this)" disabled>
+                <span class="icon">🔵</span>
+                <span>BLUE</span>
+                <span class="kw">"blue"</span>
+            </button>
+            <button class="qbtn" data-cmd="blackout" onclick="qSend(this)" disabled>
+                <span class="icon">⚫</span>
+                <span>BLACKOUT</span>
+                <span class="kw">"off"</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Command Log Card -->
+    <div class="card" id="log-panel">
+        <div class="log-header">
+            <div class="card-title" style="margin:0">Command Log</div>
+            <button class="clear-btn" onclick="clearLog()">[ clear ]</button>
+        </div>
+        <div id="log"></div>
+    </div>
+
+</main>
+
+<footer>REQUIRES GOOGLE CHROME &nbsp;·&nbsp; Web Bluetooth + Speech Recognition &nbsp;·&nbsp; ESP32-S3 DMX Controller</footer>
+
+<!-- ═══ JAVASCRIPT ═════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────────────
+//  BLE UUIDs — must match Arduino sketch exactly
+// ─────────────────────────────────────────────────────
+const SVC_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // write  → ESP32
+const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify ← ESP32
+
+// ─────────────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────────────
+let bleDevice  = null;
+let rxChar     = null;
+let connected  = false;
+let listening  = false;
+let recog      = null;
+
+// Cached DOM refs — looked up once, not on every event
+const logEl        = document.getElementById('log');
+const transcriptEl = document.getElementById('transcript');
+const micBtn       = document.getElementById('mic-btn');
+const micHint      = document.getElementById('mic-hint');
+const connectBtn   = document.getElementById('connect-btn');
+const statusDot    = document.getElementById('dot');
+const statusLbl    = document.getElementById('status-lbl');
+const iName        = document.getElementById('i-name');
+const iState       = document.getElementById('i-state');
+
+// ─────────────────────────────────────────────────────
+//  Logging — plain block prepend, no flex recalc
+// ─────────────────────────────────────────────────────
+function addLog(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = 'entry ' + type;
+    const t = new Date().toTimeString().slice(0, 8);
+    el.innerHTML = `<span class="ts">${t}</span>${msg}`;
+    logEl.appendChild(el);
+    if (logEl.children.length > 60) logEl.removeChild(logEl.firstChild);
+}
+function clearLog() { logEl.innerHTML = ''; }
+
+// ─────────────────────────────────────────────────────
+//  Status helpers
+// ─────────────────────────────────────────────────────
+function setStatus(label, state) {
+    statusLbl.textContent = label;
+    statusDot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
+}
+
+function setUIConnected(yes) {
+    connected = yes;
+    connectBtn.textContent = yes ? '[ DISCONNECT ]' : '[ CONNECT ]';
+    connectBtn.disabled = false;
+    connectBtn.className = yes ? 'disco' : '';
+    document.querySelectorAll('.qbtn').forEach(b => b.disabled = !yes);
+    micBtn.disabled = !yes;
+    micHint.textContent = yes ? 'CLICK TO SPEAK' : 'CONNECT FIRST';
+}
+
+// ─────────────────────────────────────────────────────
+//  BLE Connect / Disconnect
+// ─────────────────────────────────────────────────────
+async function toggleConnect() {
+    connected ? doDisconnect() : await doConnect();
+}
+
+async function doConnect() {
+    if (!navigator.bluetooth) {
+        addLog('Web Bluetooth not available — use Chrome on desktop.', 'err');
+        setStatus('NO BLUETOOTH', 'err');
+        return;
+    }
+
+    connectBtn.disabled  = true;
+    connectBtn.textContent = '[ SCANNING... ]';
+    setStatus('SCANNING...', '');
+    addLog('Scanning for "DMX_Wireless_Voice"...');
+
+    try {
+        bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'DMX_Wireless_Voice' }],
+            optionalServices: [SVC_UUID]
+        });
+        bleDevice.addEventListener('gattserverdisconnected', onBLEDrop);
+
+        iName.textContent  = bleDevice.name;
+        iState.textContent = 'connecting...';
+        connectBtn.textContent = '[ CONNECTING... ]';
+        addLog(`Found: ${bleDevice.name} — opening GATT...`);
+
+        const server  = await bleDevice.gatt.connect();
+        const service = await server.getPrimaryService(SVC_UUID);
+        rxChar        = await service.getCharacteristic(RX_UUID);
+
+        // Subscribe to ESP32 → Browser notifications (optional, non-critical)
+        try {
+            const txChar = await service.getCharacteristic(TX_UUID);
+            await txChar.startNotifications();
+            txChar.addEventListener('characteristicvaluechanged', onESP32Msg);
+        } catch (_) { /* device may not send notifications */ }
+
+        iState.textContent = 'connected ✓';
+        setStatus('CONNECTED', 'on');
+        setUIConnected(true);
+        addLog(`Connected to ${bleDevice.name}`, 'sent');
+
+    } catch (e) {
+        connectBtn.disabled    = false;
+        connectBtn.textContent = '[ CONNECT ]';
+        iState.textContent = 'failed';
+        setStatus('DISCONNECTED', '');
+        if (e.name !== 'NotFoundError') addLog('Connection error: ' + e.message, 'err');
+        else addLog('No device selected.', 'info');
+    }
+}
+
+function doDisconnect() {
+    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+    onBLEDrop();
+}
+
+function onBLEDrop() {
+    rxChar = null;
+    iState.textContent = 'disconnected';
+    setStatus('DISCONNECTED', '');
+    setUIConnected(false);
+    if (listening) stopListen();
+    addLog('Disconnected from device.', 'info');
+}
+
+function onESP32Msg(e) {
+    const msg = new TextDecoder().decode(e.target.value);
+    addLog('ESP32 → ' + msg, 'info');
+}
+
+// ─────────────────────────────────────────────────────
+//  Send command to ESP32
+// ─────────────────────────────────────────────────────
+async function send(text) {
+    if (!rxChar) { addLog('Not connected!', 'err'); return; }
+
+    // Update UI immediately — don't wait for BLE write
+    addLog('▶ "' + text + '"', 'sent');
+    transcriptEl.textContent = '"' + text + '"';
+    transcriptEl.style.fontStyle = 'normal';
+    transcriptEl.classList.add('active');
+    flashSent(transcriptEl);
+
+    // BLE write happens after UI already reflects the command
+    try {
+        await rxChar.writeValue(new TextEncoder().encode(text));
+    } catch (e) {
+        addLog('Send failed: ' + e.message, 'err');
+    }
+}
+
+function qSend(btn) {
+    const cmd = btn.getAttribute('data-cmd');
+    // Flash the button instantly on click
+    btn.style.borderColor = 'var(--cyan)';
+    btn.style.background  = 'rgba(0,255,204,0.12)';
+    setTimeout(() => {
+        btn.style.borderColor = '';
+        btn.style.background  = '';
+    }, 250);
+    send(cmd);
+}
+
+// ─────────────────────────────────────────────────────
+//  Speech Recognition — continuous, auto-send on final
+// ─────────────────────────────────────────────────────
+function buildRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+        addLog('Speech Recognition unavailable — use Google Chrome.', 'err');
+        return null;
+    }
+    const r = new SR();
+    r.continuous      = true;   // keep mic open after each command
+    r.interimResults  = true;   // show words as you speak
+    r.lang            = 'en-US';
+    r.maxAlternatives = 1;
+
+    r.onstart = () => {
+        transcriptEl.textContent = 'listening...';
+        transcriptEl.classList.add('active');
+        transcriptEl.style.fontStyle = 'italic';
+    };
+
+    r.onresult = (ev) => {
+        let interim = '', final = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++) {
+            const t = ev.results[i][0].transcript;
+            if (ev.results[i].isFinal) final += t;
+            else interim += t;
+        }
+
+        if (final) {
+            const cmd = final.toLowerCase().trim();
+            transcriptEl.textContent = '"' + cmd + '"';
+            transcriptEl.style.fontStyle = 'normal';
+            flashSent(transcriptEl);
+            send(cmd);
+        } else {
+            transcriptEl.textContent = interim;
+            transcriptEl.style.fontStyle = 'italic';
+        }
+    };
+
+    r.onerror = (ev) => {
+        // 'no-speech' is normal silence — ignore it, recognition will continue
+        if (ev.error === 'no-speech') return;
+        addLog('Mic error: ' + ev.error, 'err');
+        if (ev.error === 'not-allowed') stopListen();
+    };
+
+    // Chrome stops continuous recognition after a long silence.
+    // Auto-restart as long as listening flag is still on.
+    r.onend = () => {
+        if (listening) {
+            try { r.start(); } catch (_) {}
+        }
+    };
+
+    return r;
+}
+
+// Brief cyan flash on the transcript box to confirm send
+function flashSent(el) {
+    el.style.background = 'rgba(0,255,204,0.15)';
+    el.style.transition = 'background 0s';
+    setTimeout(() => {
+        el.style.transition = 'background 0.6s';
+        el.style.background = '';
+    }, 80);
+}
+
+function toggleListen() {
+    listening ? stopListen() : startListen();
+}
+
+function startListen() {
+    recog = buildRecognition();
+    if (!recog) return;
+    try {
+        recog.start();
+        listening = true;
+        micBtn.classList.add('active');
+        micBtn.textContent = '🔴';
+        micHint.textContent = 'LISTENING... CLICK TO STOP';
+    } catch (e) {
+        addLog('Microphone error: ' + e.message, 'err');
+    }
+}
+
+function stopListen() {
+    listening = false;
+    if (recog) { try { recog.stop(); } catch (_) {} }
+    recog = null;
+    micBtn.classList.remove('active');
+    micBtn.textContent = '🎤';
+    transcriptEl.classList.remove('active');
+    transcriptEl.style.fontStyle = '';
+    transcriptEl.style.background = '';
+    transcriptEl.textContent = 'awaiting voice input...';
+    if (connected) micHint.textContent = 'CLICK TO SPEAK';
+}
+
+// ─────────────────────────────────────────────────────
+//  Init checks on load
+// ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+    if (!navigator.bluetooth) {
+        addLog('⚠ Web Bluetooth not available. Open in Google Chrome on desktop.', 'err');
+    } else {
+        addLog('Web Bluetooth ready ✓');
+    }
+    if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) {
+        addLog('⚠ Speech Recognition not available. Open in Google Chrome.', 'err');
+    } else {
+        addLog('Speech Recognition ready ✓');
+    }
+});
+</script>
+</body>
+</html>
