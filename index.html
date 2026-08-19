@@ -66,8 +66,8 @@
             background: var(--dim);
             transition: background 0.3s, box-shadow 0.3s;
         }
-        .dot.on  { background: var(--cyan);    box-shadow: 0 0 8px var(--cyan);    animation: blink 2s infinite; }
-        .dot.err { background: var(--red);     box-shadow: 0 0 8px var(--red); }
+        .dot.on  { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: blink 2s infinite; }
+        .dot.err { background: var(--red);  box-shadow: 0 0 8px var(--red); }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
@@ -143,6 +143,7 @@
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 14px;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         #mic-btn:hover         { border-color: var(--cyan); color: var(--cyan); }
         #mic-btn:disabled      { opacity: .3; cursor: not-allowed; }
@@ -245,9 +246,9 @@
             border-left: 2px solid var(--border);
             line-height: 1.5;
         }
-        .entry.sent  { border-color: var(--cyan);    color: var(--cyan); }
-        .entry.err   { border-color: var(--red);     color: var(--red); }
-        .entry.info  { border-color: var(--border);  color: var(--dim); }
+        .entry.sent  { border-color: var(--cyan);   color: var(--cyan); }
+        .entry.err   { border-color: var(--red);    color: var(--red); }
+        .entry.info  { border-color: var(--border); color: var(--dim); }
         .entry .ts   { opacity: .45; margin-right: 8px; }
 
         /* ── FOOTER ──────────────────────────────── */
@@ -264,6 +265,19 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: var(--surface2); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* ── MOBILE RESPONSIVE ADAPTATIONS ───────── */
+        @media (max-width: 600px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            #ble-panel, #voice-panel {
+                grid-column: 1;
+            }
+            .quick-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -340,23 +354,18 @@
 
 <!-- ═══ JAVASCRIPT ═════════════════════════════════ -->
 <script>
-// ─────────────────────────────────────────────────────
-//  BLE UUIDs — must match Arduino sketch exactly
-// ─────────────────────────────────────────────────────
 const SVC_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // write  → ESP32
-const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify ← ESP32
+const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
-// ─────────────────────────────────────────────────────
-//  State
-// ─────────────────────────────────────────────────────
-let bleDevice  = null;
-let rxChar     = null;
-let connected  = false;
-let listening  = false;
-let recog      = null;
+let bleDevice       = null;
+let rxChar          = null;
+let connected       = false;
+let isUserListening = false;
+let recog           = null;
+let audioStream     = null;
+let restartDelay    = null;
 
-// Cached DOM refs — looked up once, not on every event
 const logEl        = document.getElementById('log');
 const transcriptEl = document.getElementById('transcript');
 const micBtn       = document.getElementById('mic-btn');
@@ -367,9 +376,6 @@ const statusLbl    = document.getElementById('status-lbl');
 const iName        = document.getElementById('i-name');
 const iState       = document.getElementById('i-state');
 
-// ─────────────────────────────────────────────────────
-//  Logging — plain block prepend, no flex recalc
-// ─────────────────────────────────────────────────────
 function addLog(msg, type = 'info') {
     const el = document.createElement('div');
     el.className = 'entry ' + type;
@@ -380,9 +386,6 @@ function addLog(msg, type = 'info') {
 }
 function clearLog() { logEl.innerHTML = ''; }
 
-// ─────────────────────────────────────────────────────
-//  Status helpers
-// ─────────────────────────────────────────────────────
 function setStatus(label, state) {
     statusLbl.textContent = label;
     statusDot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
@@ -398,16 +401,13 @@ function setUIConnected(yes) {
     micHint.textContent = yes ? 'CLICK TO SPEAK' : 'CONNECT FIRST';
 }
 
-// ─────────────────────────────────────────────────────
-//  BLE Connect / Disconnect
-// ─────────────────────────────────────────────────────
 async function toggleConnect() {
     connected ? doDisconnect() : await doConnect();
 }
 
 async function doConnect() {
     if (!navigator.bluetooth) {
-        addLog('Web Bluetooth not available — use Chrome on desktop.', 'err');
+        addLog('Web Bluetooth API unavailable in this browser.', 'err');
         setStatus('NO BLUETOOTH', 'err');
         return;
     }
@@ -433,12 +433,11 @@ async function doConnect() {
         const service = await server.getPrimaryService(SVC_UUID);
         rxChar        = await service.getCharacteristic(RX_UUID);
 
-        // Subscribe to ESP32 → Browser notifications (optional, non-critical)
         try {
             const txChar = await service.getCharacteristic(TX_UUID);
             await txChar.startNotifications();
             txChar.addEventListener('characteristicvaluechanged', onESP32Msg);
-        } catch (_) { /* device may not send notifications */ }
+        } catch (_) {}
 
         iState.textContent = 'connected ✓';
         setStatus('CONNECTED', 'on');
@@ -465,7 +464,7 @@ function onBLEDrop() {
     iState.textContent = 'disconnected';
     setStatus('DISCONNECTED', '');
     setUIConnected(false);
-    if (listening) stopListen();
+    if (isUserListening) stopListen();
     addLog('Disconnected from device.', 'info');
 }
 
@@ -474,20 +473,15 @@ function onESP32Msg(e) {
     addLog('ESP32 → ' + msg, 'info');
 }
 
-// ─────────────────────────────────────────────────────
-//  Send command to ESP32
-// ─────────────────────────────────────────────────────
 async function send(text) {
     if (!rxChar) { addLog('Not connected!', 'err'); return; }
 
-    // Update UI immediately — don't wait for BLE write
     addLog('▶ "' + text + '"', 'sent');
     transcriptEl.textContent = '"' + text + '"';
     transcriptEl.style.fontStyle = 'normal';
     transcriptEl.classList.add('active');
     flashSent(transcriptEl);
 
-    // BLE write happens after UI already reflects the command
     try {
         await rxChar.writeValue(new TextEncoder().encode(text));
     } catch (e) {
@@ -497,7 +491,6 @@ async function send(text) {
 
 function qSend(btn) {
     const cmd = btn.getAttribute('data-cmd');
-    // Flash the button instantly on click
     btn.style.borderColor = 'var(--cyan)';
     btn.style.background  = 'rgba(0,255,204,0.12)';
     setTimeout(() => {
@@ -507,23 +500,19 @@ function qSend(btn) {
     send(cmd);
 }
 
-// ─────────────────────────────────────────────────────
-//  Speech Recognition — continuous, auto-send on final
-// ─────────────────────────────────────────────────────
-function buildRecognition() {
+/* ── SPEECH RECOGNITION ENGINE ─────────────────── */
+function initSpeechEngine() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-        addLog('Speech Recognition unavailable — use Google Chrome.', 'err');
-        return null;
-    }
+    if (!SR) return null;
+
     const r = new SR();
-    r.continuous      = true;   // keep mic open after each command
-    r.interimResults  = true;   // show words as you speak
-    r.lang            = 'en-US';
+    r.continuous      = true;  
+    r.interimResults  = true;  
+    r.lang            = navigator.language || 'en-US';
     r.maxAlternatives = 1;
 
     r.onstart = () => {
-        transcriptEl.textContent = 'listening...';
+        transcriptEl.textContent = 'Listening...';
         transcriptEl.classList.add('active');
         transcriptEl.style.fontStyle = 'italic';
     };
@@ -542,31 +531,40 @@ function buildRecognition() {
             transcriptEl.style.fontStyle = 'normal';
             flashSent(transcriptEl);
             send(cmd);
-        } else {
+        } else if (interim) {
             transcriptEl.textContent = interim;
             transcriptEl.style.fontStyle = 'italic';
         }
     };
 
     r.onerror = (ev) => {
-        // 'no-speech' is normal silence — ignore it, recognition will continue
-        if (ev.error === 'no-speech') return;
+        if (ev.error === 'no-speech' || ev.error === 'aborted') return;
+        
         addLog('Mic error: ' + ev.error, 'err');
-        if (ev.error === 'not-allowed') stopListen();
+        if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+            stopListen();
+            addLog('Mic access blocked. Check browser/OS permissions.', 'err');
+        }
     };
 
-    // Chrome stops continuous recognition after a long silence.
-    // Auto-restart as long as listening flag is still on.
     r.onend = () => {
-        if (listening) {
-            try { r.start(); } catch (_) {}
+        if (isUserListening) {
+            clearTimeout(restartDelay);
+            restartDelay = setTimeout(() => {
+                if (isUserListening) {
+                    try { 
+                        r.start(); 
+                    } catch (e) {
+                        // Engine busy or restarting
+                    }
+                }
+            }, 150);
         }
     };
 
     return r;
 }
 
-// Brief cyan flash on the transcript box to confirm send
 function flashSent(el) {
     el.style.background = 'rgba(0,255,204,0.15)';
     el.style.transition = 'background 0s';
@@ -577,27 +575,51 @@ function flashSent(el) {
 }
 
 function toggleListen() {
-    listening ? stopListen() : startListen();
+    isUserListening ? stopListen() : startListen();
 }
 
-function startListen() {
-    recog = buildRecognition();
-    if (!recog) return;
+async function startListen() {
+    if (!recog) {
+        addLog('Speech Recognition unavailable on this browser.', 'err');
+        return;
+    }
+
+    try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+    } catch (e) {
+        addLog('Microphone permission denied by device.', 'err');
+        return;
+    }
+
+    isUserListening = true;
+    micBtn.classList.add('active');
+    micBtn.textContent = '🔴';
+    micHint.textContent = 'LISTENING... CLICK TO STOP';
+
     try {
         recog.start();
-        listening = true;
-        micBtn.classList.add('active');
-        micBtn.textContent = '🔴';
-        micHint.textContent = 'LISTENING... CLICK TO STOP';
     } catch (e) {
-        addLog('Microphone error: ' + e.message, 'err');
+        if (e.name !== 'InvalidStateError') {
+            addLog('Mic start failed: ' + e.message, 'err');
+        }
     }
 }
 
 function stopListen() {
-    listening = false;
-    if (recog) { try { recog.stop(); } catch (_) {} }
-    recog = null;
+    isUserListening = false;
+    clearTimeout(restartDelay);
+
+    if (recog) {
+        try { recog.stop(); } catch (_) {}
+    }
+
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
+
     micBtn.classList.remove('active');
     micBtn.textContent = '🎤';
     transcriptEl.classList.remove('active');
@@ -607,17 +629,16 @@ function stopListen() {
     if (connected) micHint.textContent = 'CLICK TO SPEAK';
 }
 
-// ─────────────────────────────────────────────────────
-//  Init checks on load
-// ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
     if (!navigator.bluetooth) {
-        addLog('⚠ Web Bluetooth not available. Open in Google Chrome on desktop.', 'err');
+        addLog('⚠ Web Bluetooth not supported in this browser.', 'err');
     } else {
         addLog('Web Bluetooth ready ✓');
     }
-    if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) {
-        addLog('⚠ Speech Recognition not available. Open in Google Chrome.', 'err');
+
+    recog = initSpeechEngine();
+    if (!recog) {
+        addLog('⚠ Speech Recognition not supported in this browser.', 'err');
     } else {
         addLog('Speech Recognition ready ✓');
     }
