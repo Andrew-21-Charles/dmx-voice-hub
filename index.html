@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMX Voice Hub</title>
+    <title>DMX Voice & Surface Hub</title>
     <style>
         :root {
             --bg:       #0a0a12;
@@ -28,7 +28,6 @@
             flex-direction: column;
         }
 
-        /* ── HEADER ─────────────────────────────── */
         header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -69,24 +68,22 @@
             background: var(--dim);
             transition: background 0.3s, box-shadow 0.3s;
         }
-        .dot.on  { background: var(--cyan);    box-shadow: 0 0 8px var(--cyan);    animation: blink 2s infinite; }
-        .dot.err { background: var(--red);     box-shadow: 0 0 8px var(--red); }
+        .dot.on  { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: blink 2s infinite; }
+        .dot.err { background: var(--red); box-shadow: 0 0 8px var(--red); }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-        /* ── MAIN GRID ───────────────────────────── */
         main {
             flex: 1;
             padding: 16px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* ── CARD ────────────────────────────────── */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -101,7 +98,6 @@
             margin-bottom: 14px;
         }
 
-        /* ── BLE PANEL ───────────────────────────── */
         #ble-panel { grid-column: span 1; }
 
         #connect-btn {
@@ -126,7 +122,6 @@
         .info-row { font-size: 0.75rem; color: var(--dim); line-height: 1.8; word-break: break-all; }
         .info-row span { color: var(--text); }
 
-        /* ── VOICE PANEL ─────────────────────────── */
         #voice-panel {
             grid-column: span 1;
             display: flex;
@@ -189,78 +184,61 @@
             transition: border-color 0.2s, color 0.2s, background 0.6s;
         }
 
-        /* ── CUSTOM COMMAND CREATOR ───────────────── */
+        .full-width { grid-column: 1 / -1; }
+        
+        .fixture-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .fix-btn {
+            padding: 12px 6px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-family: inherit; cursor: pointer; text-align: center;
+            font-size: 0.75rem; transition: all 0.2s;
+        }
+        .fix-btn.active { border-color: var(--cyan); background: rgba(0, 255, 204, 0.15); color: var(--cyan); }
+        .fix-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+        .fader-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+        .fader-card {
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+            padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .fader-card label { font-size: 0.6rem; color: var(--dim); text-align: center; }
+        .fader-card input[type=range] {
+            writing-mode: bt-lr;
+            appearance: slider-vertical;
+            width: 24px; height: 140px; cursor: pointer;
+        }
+        .fader-card input[type=range]:disabled { opacity: .35; cursor: not-allowed; }
+        .fader-val { font-size: 0.75rem; color: var(--cyan); }
+
         #custom-creator-panel { grid-column: 1 / -1; }
 
-        .creator-form {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
+        .creator-form { display: flex; gap: 10px; flex-wrap: wrap; }
         .cmd-input {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px 12px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.8rem;
-            outline: none;
-            transition: border-color 0.2s;
-            min-width: 120px;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+            padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 0.8rem;
+            outline: none; transition: border-color 0.2s; min-width: 120px;
         }
         .cmd-input:focus { border-color: var(--cyan); }
         #custom-label { flex: 1 1 180px; }
         #custom-cmd   { flex: 2 1 240px; }
 
         .add-btn {
-            padding: 10px 16px;
-            background: transparent;
-            border: 1px solid var(--cyan);
-            color: var(--cyan);
-            font-family: inherit;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
-            white-space: nowrap;
-            flex: 1 1 auto;
+            padding: 10px 16px; background: transparent; border: 1px solid var(--cyan);
+            color: var(--cyan); font-family: inherit; font-size: 0.75rem; letter-spacing: 1px;
+            cursor: pointer; border-radius: 6px; transition: all 0.2s; white-space: nowrap; flex: 1 1 auto;
             touch-action: manipulation;
         }
         .add-btn:hover { background: rgba(0,255,204,.1); box-shadow: 0 0 10px rgba(0,255,204,.2); }
 
-        /* ── QUICK COMMANDS ──────────────────────── */
         #quick-panel { grid-column: 1 / -1; }
 
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
-        }
-
-        .qbtn-wrapper {
-            position: relative;
-            display: flex;
-            width: 100%;
-        }
+        .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .qbtn-wrapper { position: relative; display: flex; width: 100%; }
 
         .qbtn {
-            width: 100%;
-            padding: 14px 6px;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.18s;
-            display: flex; flex-direction: column;
-            align-items: center; gap: 6px;
-            touch-action: manipulation;
+            width: 100%; padding: 14px 6px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.75rem;
+            letter-spacing: 1px; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column;
+            align-items: center; gap: 6px; touch-action: manipulation;
         }
         .qbtn .icon { font-size: 1.4rem; }
         .qbtn .kw   { font-size: 0.6rem; color: var(--dim); word-break: break-all; text-align: center; }
@@ -269,119 +247,63 @@
         .qbtn:disabled { opacity: .3; cursor: not-allowed; }
 
         .del-btn {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: none;
-            border: none;
-            color: var(--dim);
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 2px 6px;
-            line-height: 1;
-            border-radius: 3px;
-            transition: color 0.2s, background 0.2s;
-            touch-action: manipulation;
+            position: absolute; top: 2px; right: 2px; background: none; border: none;
+            color: var(--dim); font-size: 1rem; cursor: pointer; padding: 2px 6px; line-height: 1;
+            border-radius: 3px; transition: color 0.2s, background 0.2s; touch-action: manipulation;
         }
         .del-btn:hover { color: var(--red); background: rgba(255,68,68,0.15); }
 
-        /* ── LOG PANEL ───────────────────────────── */
         #log-panel { grid-column: 1 / -1; }
 
-        .log-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px;
-        }
+        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .clear-btn {
-            font-size: 0.65rem; letter-spacing: 1px;
-            color: var(--dim); background: none; border: none;
-            cursor: pointer; font-family: inherit;
-            touch-action: manipulation;
+            font-size: 0.65rem; letter-spacing: 1px; color: var(--dim); background: none; border: none;
+            cursor: pointer; font-family: inherit; touch-action: manipulation;
         }
         .clear-btn:hover { color: var(--text); }
 
         #log {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px;
-            height: 130px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 3px;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+            padding: 10px; height: 130px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 3px;
         }
 
         .entry {
-            font-size: 0.72rem;
-            padding: 2px 6px;
-            margin-bottom: 2px;
-            border-left: 2px solid var(--border);
-            line-height: 1.4;
-            word-break: break-word;
+            font-size: 0.72rem; padding: 2px 6px; margin-bottom: 2px; border-left: 2px solid var(--border);
+            line-height: 1.4; word-break: break-word;
         }
-        .entry.sent  { border-color: var(--cyan);    color: var(--cyan); }
-        .entry.err   { border-color: var(--red);     color: var(--red); }
-        .entry.info  { border-color: var(--border);  color: var(--dim); }
+        .entry.sent  { border-color: var(--cyan); color: var(--cyan); }
+        .entry.err   { border-color: var(--red);  color: var(--red); }
+        .entry.info  { border-color: var(--border); color: var(--dim); }
         .entry .ts   { opacity: .45; margin-right: 6px; }
 
-        /* ── FOOTER ──────────────────────────────── */
         footer {
-            text-align: center;
-            padding: 12px;
-            font-size: 0.62rem;
-            color: var(--dim);
-            border-top: 1px solid var(--border);
-            letter-spacing: 1px;
-            line-height: 1.5;
+            text-align: center; padding: 12px; font-size: 0.62rem; color: var(--dim);
+            border-top: 1px solid var(--border); letter-spacing: 1px; line-height: 1.5;
         }
 
-        /* ── SCROLLBAR ───────────────────────────── */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: var(--surface2); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-        /* ── RESPONSIVE MEDIA QUERIES ────────────── */
-        @media (max-width: 640px) {
-            main {
-                grid-template-columns: 1fr;
-                padding: 12px;
-                gap: 12px;
-            }
-            #ble-panel, #voice-panel {
-                grid-column: 1 / -1;
-            }
-            .quick-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .creator-form {
-                flex-direction: column;
-            }
-            #custom-label, #custom-cmd, .add-btn {
-                width: 100%;
-                flex: 1 1 100%;
-            }
-            header {
-                padding: 12px 16px;
-            }
+        @media (max-width: 680px) {
+            main { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+            #ble-panel, #voice-panel { grid-column: 1 / -1; }
+            .fixture-grid { grid-template-columns: repeat(2, 1fr); }
+            .fader-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .quick-grid { grid-template-columns: repeat(2, 1fr); }
+            .creator-form { flex-direction: column; }
+            #custom-label, #custom-cmd, .add-btn { width: 100%; flex: 1 1 100%; }
         }
     </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ═══════════════════════════════════ -->
 <header>
-    <div class="logo">⚡ DMX <em>VOICE</em> HUB</div>
+    <div class="logo">⚡ DMX <em>VOICE & SURFACE</em> HUB</div>
     <div id="header-status">
         <div class="dot" id="dot"></div>
         <span id="status-lbl">DISCONNECTED</span>
     </div>
 </header>
 
-<!-- ═══ MAIN ══════════════════════════════════════ -->
 <main>
 
-    <!-- BLE Connection Card -->
     <div class="card" id="ble-panel">
         <div class="card-title">Bluetooth Connection</div>
         <button id="connect-btn" onclick="toggleConnect()">[ CONNECT ]</button>
@@ -391,7 +313,6 @@
         </div>
     </div>
 
-    <!-- Voice Control Card -->
     <div class="card" id="voice-panel">
         <div class="card-title">Voice Command</div>
         <button id="mic-btn" onclick="toggleListen()" disabled title="Connect to ESP32 first">🎤</button>
@@ -399,7 +320,53 @@
         <div id="transcript">awaiting voice input...</div>
     </div>
 
-    <!-- Add Custom Command Card -->
+    <div class="card full-width">
+        <div class="card-title">Target Fixture Selection (Multi-Select Supported)</div>
+        <div class="info-row" style="margin-bottom: 12px;">
+            Targeting Fixtures: <span id="target-fix-lbl" style="color:var(--cyan)">1</span>
+        </div>
+        <div class="fixture-grid">
+            <button class="fix-btn active" id="fbtn-1" onclick="toggleFixture(1)" disabled>FIX 1: ON</button>
+            <button class="fix-btn" id="fbtn-2" onclick="toggleFixture(2)" disabled>FIX 2: OFF</button>
+            <button class="fix-btn" id="fbtn-3" onclick="toggleFixture(3)" disabled>FIX 3: OFF</button>
+            <button class="fix-btn" id="fbtn-4" onclick="toggleFixture(4)" disabled>FIX 4: OFF</button>
+        </div>
+
+        <div class="card-title">6-Channel 10-Step Faders (0 → 255)</div>
+        <div class="fader-grid">
+            <div class="fader-card">
+                <label>CH 1<br>DIMMER</label>
+                <input type="range" id="slider-1" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(1, this.value)" disabled>
+                <span class="fader-val" id="v-1">0</span>
+            </div>
+            <div class="fader-card">
+                <label>CH 2<br>RED</label>
+                <input type="range" id="slider-2" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(2, this.value)" disabled>
+                <span class="fader-val" id="v-2">0</span>
+            </div>
+            <div class="fader-card">
+                <label>CH 3<br>GREEN</label>
+                <input type="range" id="slider-3" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(3, this.value)" disabled>
+                <span class="fader-val" id="v-3">0</span>
+            </div>
+            <div class="fader-card">
+                <label>CH 4<br>BLUE</label>
+                <input type="range" id="slider-4" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(4, this.value)" disabled>
+                <span class="fader-val" id="v-4">0</span>
+            </div>
+            <div class="fader-card">
+                <label>CH 5<br>STROBE</label>
+                <input type="range" id="slider-5" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(5, this.value)" disabled>
+                <span class="fader-val" id="v-5">0</span>
+            </div>
+            <div class="fader-card">
+                <label>CH 6<br>SPECIAL</label>
+                <input type="range" id="slider-6" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(6, this.value)" disabled>
+                <span class="fader-val" id="v-6">0</span>
+            </div>
+        </div>
+    </div>
+
     <div class="card" id="custom-creator-panel">
         <div class="card-title">Add Custom Command</div>
         <div class="creator-form">
@@ -409,7 +376,6 @@
         </div>
     </div>
 
-    <!-- Quick Commands Card -->
     <div class="card" id="quick-panel">
         <div class="card-title">Quick Commands</div>
         <div class="quick-grid" id="quick-grid">
@@ -444,10 +410,9 @@
         </div>
     </div>
 
-    <!-- Command Log Card -->
     <div class="card" id="log-panel">
         <div class="log-header">
-            <div class="card-title" style="margin:0">Command Log</div>
+            <div class="card-title" style="margin:0">Console Output Log</div>
             <button class="clear-btn" onclick="clearLog()">[ clear ]</button>
         </div>
         <div id="log"></div>
@@ -457,27 +422,28 @@
 
 <footer>REQUIRES GOOGLE CHROME &nbsp;·&nbsp; Web Bluetooth + Speech Recognition &nbsp;·&nbsp; ESP32-S3 DMX Controller</footer>
 
-<!-- ═══ JAVASCRIPT ═════════════════════════════════ -->
 <script>
-// ─────────────────────────────────────────────────────
-//  BLE UUIDs — must match Arduino sketch exactly
-// ─────────────────────────────────────────────────────
 const SVC_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // write  → ESP32
-const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify ← ESP32
+const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; 
+const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; 
 
-// ─────────────────────────────────────────────────────
-//  State
-// ─────────────────────────────────────────────────────
-let bleDevice  = null;
-let rxChar     = null;
-let connected  = false;
-let listening  = false;
-let recog      = null;
-let isStarting = false;
-let customCmds = [];
+// Discrete 10-step mapping table
+const STEP_VALUES = [0, 50, 75, 100, 125, 150, 175, 200, 225, 255];
 
-// Cached DOM refs
+let bleDevice     = null;
+let rxChar        = null;
+let connected     = false;
+let listening     = false;
+let recog         = null;
+let isStarting    = false;
+let customCmds    = [];
+
+let fixStates     = {1: true, 2: false, 3: false, 4: false};
+
+let cmdQueue = [];
+let isSending = false;
+let lastSendTime = 0;
+
 const logEl        = document.getElementById('log');
 const transcriptEl = document.getElementById('transcript');
 const micBtn       = document.getElementById('mic-btn');
@@ -489,9 +455,6 @@ const iName        = document.getElementById('i-name');
 const iState       = document.getElementById('i-state');
 const quickGrid    = document.getElementById('quick-grid');
 
-// ─────────────────────────────────────────────────────
-//  Logging
-// ─────────────────────────────────────────────────────
 function addLog(msg, type = 'info') {
     const el = document.createElement('div');
     el.className = 'entry ' + type;
@@ -502,9 +465,6 @@ function addLog(msg, type = 'info') {
 }
 function clearLog() { logEl.innerHTML = ''; }
 
-// ─────────────────────────────────────────────────────
-//  Status helpers
-// ─────────────────────────────────────────────────────
 function setStatus(label, state) {
     statusLbl.textContent = label;
     statusDot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
@@ -515,14 +475,13 @@ function setUIConnected(yes) {
     connectBtn.textContent = yes ? '[ DISCONNECT ]' : '[ CONNECT ]';
     connectBtn.disabled = false;
     connectBtn.className = yes ? 'disco' : '';
-    document.querySelectorAll('.qbtn').forEach(b => b.disabled = !yes);
+    
+    document.querySelectorAll('.qbtn, .fix-btn, .fader-input').forEach(b => b.disabled = !yes);
+    
     micBtn.disabled = !yes;
     micHint.textContent = yes ? 'CLICK TO SPEAK' : 'CONNECT FIRST';
 }
 
-// ─────────────────────────────────────────────────────
-//  BLE Connect / Disconnect
-// ─────────────────────────────────────────────────────
 async function toggleConnect() {
     connected ? doDisconnect() : await doConnect();
 }
@@ -559,7 +518,7 @@ async function doConnect() {
             const txChar = await service.getCharacteristic(TX_UUID);
             await txChar.startNotifications();
             txChar.addEventListener('characteristicvaluechanged', onESP32Msg);
-        } catch (_) { /* device may not send notifications */ }
+        } catch (_) {}
 
         iState.textContent = 'connected ✓';
         setStatus('CONNECTED', 'on');
@@ -595,23 +554,41 @@ function onESP32Msg(e) {
     addLog('ESP32 → ' + msg, 'info');
 }
 
-// ─────────────────────────────────────────────────────
-//  Send command to ESP32
-// ─────────────────────────────────────────────────────
 async function send(text) {
     if (!rxChar) { addLog('Not connected!', 'err'); return; }
 
-    addLog('▶ "' + text + '"', 'sent');
-    transcriptEl.textContent = '"' + text + '"';
-    transcriptEl.style.fontStyle = 'normal';
-    transcriptEl.classList.add('active');
-    flashSent(transcriptEl);
+    cmdQueue.push(text);
+    processQueue();
+}
 
-    try {
-        await rxChar.writeValue(new TextEncoder().encode(text));
-    } catch (e) {
-        addLog('Send failed: ' + e.message, 'err');
+async function processQueue() {
+    if (isSending || cmdQueue.length === 0) return;
+    isSending = true;
+
+    while (cmdQueue.length > 0) {
+        const text = cmdQueue.shift();
+        
+        const now = Date.now();
+        const elapsed = now - lastSendTime;
+        if (elapsed < 10) {
+            await new Promise(res => setTimeout(res, 10 - elapsed));
+        }
+
+        try {
+            await rxChar.writeValue(new TextEncoder().encode(text));
+            lastSendTime = Date.now();
+            
+            addLog('> ' + text, 'sent');
+            transcriptEl.textContent = '"' + text + '"';
+            transcriptEl.style.fontStyle = 'normal';
+            transcriptEl.classList.add('active');
+            flashSent(transcriptEl);
+        } catch (e) {
+            addLog('Send failed: ' + e.message, 'err');
+        }
     }
+
+    isSending = false;
 }
 
 function qSend(btn) {
@@ -625,15 +602,49 @@ function qSend(btn) {
     send(cmd);
 }
 
-// ─────────────────────────────────────────────────────
-//  Custom Commands Logic
-// ─────────────────────────────────────────────────────
+function toggleFixture(id) {
+    fixStates[id] = !fixStates[id];
+    
+    const activeList = [];
+    for (let i = 1; i <= 4; i++) {
+        const btn = document.getElementById(`fbtn-${i}`);
+        if (fixStates[i]) {
+            btn.classList.add('active');
+            btn.textContent = `FIX ${i}: ON`;
+            activeList.push(i);
+        } else {
+            btn.classList.remove('active');
+            btn.textContent = `FIX ${i}: OFF`;
+        }
+    }
+    
+    document.getElementById('target-fix-lbl').textContent = activeList.length > 0 ? activeList.join(', ') : 'None';
+}
+
+// Map index step (0-9) directly to [0, 50, 75, 100, 125, 150, 175, 200, 225, 255]
+function sendChannelStep(chOffset, stepIndex) {
+    const idx = parseInt(stepIndex, 10);
+    const numericValue = STEP_VALUES[idx] !== undefined ? STEP_VALUES[idx] : 0;
+
+    const valDisplay = document.getElementById(`v-${chOffset}`);
+    if (valDisplay) valDisplay.textContent = numericValue;
+
+    const activeFixtures = Object.keys(fixStates).filter(id => fixStates[id]);
+    if (activeFixtures.length === 0) return;
+
+    for (const fixId of activeFixtures) {
+        const baseAddr = (parseInt(fixId, 10) - 1) * 16;
+        const absoluteDmxCh = baseAddr + parseInt(chOffset, 10);
+        send(`ch ${absoluteDmxCh} ${numericValue}`);
+    }
+}
+
 function loadCustomCommands() {
     const saved = localStorage.getItem('dmx_custom_cmds');
     if (saved) {
         try {
             customCmds = JSON.parse(saved);
-            customCmds.forEach(item => renderCustomCommand(item.label, item.cmd, false));
+            customCmds.forEach(item => renderCustomCommand(item.label, item.cmd));
         } catch (_) {}
     }
 }
@@ -654,14 +665,14 @@ function addCustomCommand() {
     customCmds.push(newItem);
     localStorage.setItem('dmx_custom_cmds', JSON.stringify(customCmds));
 
-    renderCustomCommand(label, cmd, true);
+    renderCustomCommand(label, cmd);
 
     labelInput.value = '';
     cmdInput.value   = '';
     addLog(`Saved command: "${label}" → [${cmd}]`, 'info');
 }
 
-function renderCustomCommand(label, cmd, isNew) {
+function renderCustomCommand(label, cmd) {
     const wrapper = document.createElement('div');
     wrapper.className = 'qbtn-wrapper';
 
@@ -671,7 +682,6 @@ function renderCustomCommand(label, cmd, isNew) {
     btn.onclick = () => qSend(btn);
     btn.disabled = !connected;
 
-    // Updated with light icon (💡)
     btn.innerHTML = `
         <span class="icon">💡</span>
         <span>${label.toUpperCase()}</span>
@@ -699,9 +709,6 @@ function removeCustomCommand(wrapperEl, label, cmd) {
     addLog(`Removed command: "${label}"`, 'info');
 }
 
-// ─────────────────────────────────────────────────────
-//  Speech Recognition — Continuous & Reusable Instance
-// ─────────────────────────────────────────────────────
 function initSpeechEngine() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return null;
@@ -812,9 +819,6 @@ function stopListen() {
     if (connected) micHint.textContent = 'CLICK TO SPEAK';
 }
 
-// ─────────────────────────────────────────────────────
-//  Init checks on load
-// ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
     if (!navigator.bluetooth) {
         addLog('⚠ Web Bluetooth not available. Use Chrome on Android or PC.', 'err');
