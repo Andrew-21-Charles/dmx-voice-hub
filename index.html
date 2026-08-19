@@ -66,8 +66,8 @@
             background: var(--dim);
             transition: background 0.3s, box-shadow 0.3s;
         }
-        .dot.on  { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: blink 2s infinite; }
-        .dot.err { background: var(--red);  box-shadow: 0 0 8px var(--red); }
+        .dot.on  { background: var(--cyan);    box-shadow: 0 0 8px var(--cyan);    animation: blink 2s infinite; }
+        .dot.err { background: var(--red);     box-shadow: 0 0 8px var(--red); }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
@@ -246,9 +246,9 @@
             border-left: 2px solid var(--border);
             line-height: 1.5;
         }
-        .entry.sent  { border-color: var(--cyan);   color: var(--cyan); }
-        .entry.err   { border-color: var(--red);    color: var(--red); }
-        .entry.info  { border-color: var(--border); color: var(--dim); }
+        .entry.sent  { border-color: var(--cyan);    color: var(--cyan); }
+        .entry.err   { border-color: var(--red);     color: var(--red); }
+        .entry.info  { border-color: var(--border);  color: var(--dim); }
         .entry .ts   { opacity: .45; margin-right: 8px; }
 
         /* ── FOOTER ──────────────────────────────── */
@@ -354,75 +354,319 @@
 
 <!-- ═══ JAVASCRIPT ═════════════════════════════════ -->
 <script>
+// ─────────────────────────────────────────────────────
+//  BLE UUIDs — must match Arduino sketch exactly
+// ─────────────────────────────────────────────────────
+const SVC_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // write  → ESP32
+const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify ← ESP32
+
+// ─────────────────────────────────────────────────────
+//  State
+// ─────────────────────────────────────────────────────
+let bleDevice   = null;
+let rxChar      = null;
+let connected   = false;
+let listening   = false;
+let recog       = null;
+let audioStream = null; // Keeps hardware mic active on Mobile
+let restartTimer = null;
+
+// Cached DOM refs
+const logEl        = document.getElementById('log');
+const transcriptEl = document.getElementById('transcript');
+const micBtn       = document.getElementById('mic-btn');
+const micHint      = document.getElementById('mic-hint');
+const connectBtn   = document.getElementById('connect-btn');
+const statusDot    = document.getElementById('dot');
+const statusLbl    = document.getElementById('status-lbl');
+const iName        = document.getElementById('i-name');
+const iState       = document.getElementById('i-state');
+
+// ─────────────────────────────────────────────────────
+//  Logging
+// ─────────────────────────────────────────────────────
+function addLog(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = 'entry ' + type;
+    const t = new Date().toTimeString().slice(0, 8);
+    el.innerHTML = `<span class="ts">${t}</span>${msg}`;
+    logEl.appendChild(el);
+    if (logEl.children.length > 60) logEl.removeChild(logEl.firstChild);
+}
+function clearLog() { logEl.innerHTML = ''; }
+
+// ─────────────────────────────────────────────────────
+//  Status helpers
+// ─────────────────────────────────────────────────────
+function setStatus(label, state) {
+    statusLbl.textContent = label;
+    statusDot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
+}
+
+function setUIConnected(yes) {
+    connected = yes;
+    connectBtn.textContent = yes ? '[ DISCONNECT ]' : '[ CONNECT ]';
+    connectBtn.disabled = false;
+    connectBtn.className = yes ? 'disco' : '';
+    document.querySelectorAll('.qbtn').forEach(b => b.disabled = !yes);
+    micBtn.disabled = !yes;
+    micHint.textContent = yes ? 'CLICK TO SPEAK' : 'CONNECT FIRST';
+}
+
+// ─────────────────────────────────────────────────────
+//  BLE Connect / Disconnect
+// ─────────────────────────────────────────────────────
+async function toggleConnect() {
+    connected ? doDisconnect() : await doConnect();
+}
+
+async function doConnect() {
+    if (!navigator.bluetooth) {
+        addLog('Web Bluetooth not available — use Google Chrome on Desktop/Android.', 'err');
+        setStatus('NO BLUETOOTH', 'err');
+        return;
+    }
+
+    connectBtn.disabled  = true;
+    connectBtn.textContent = '[ SCANNING... ]';
+    setStatus('SCANNING...', '');
+    addLog('Scanning for "DMX_Wireless_Voice"...');
+
+    try {
+        bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'DMX_Wireless_Voice' }],
+            optionalServices: [SVC_UUID]
+        });
+        bleDevice.addEventListener('gattserverdisconnected', onBLEDrop);
+
+        iName.textContent  = bleDevice.name;
+        iState.textContent = 'connecting...';
+        connectBtn.textContent = '[ CONNECTING... ]';
+        addLog(`Found: ${bleDevice.name} — opening GATT...`);
+
+        const server  = await bleDevice.gatt.connect();
+        const service = await server.getPrimaryService(SVC_UUID);
+        rxChar        = await service.getCharacteristic(RX_UUID);
+
+        try {
+            const txChar = await service.getCharacteristic(TX_UUID);
+            await txChar.startNotifications();
+            txChar.addEventListener('characteristicvaluechanged', onESP32Msg);
+        } catch (_) { /* device may not send notifications */ }
+
+        iState.textContent = 'connected ✓';
+        setStatus('CONNECTED', 'on');
+        setUIConnected(true);
+        addLog(`Connected to ${bleDevice.name}`, 'sent');
+
+    } catch (e) {
+        connectBtn.disabled    = false;
+        connectBtn.textContent = '[ CONNECT ]';
+        iState.textContent = 'failed';
+        setStatus('DISCONNECTED', '');
+        if (e.name !== 'NotFoundError') addLog('Connection error: ' + e.message, 'err');
+        else addLog('No device selected.', 'info');
+    }
+}
+
+function doDisconnect() {
+    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+    onBLEDrop();
+}
+
+function onBLEDrop() {
+    rxChar = null;
+    iState.textContent = 'disconnected';
+    setStatus('DISCONNECTED', '');
+    setUIConnected(false);
+    if (listening) stopListen();
+    addLog('Disconnected from device.', 'info');
+}
+
+function onESP32Msg(e) {
+    const msg = new TextDecoder().decode(e.target.value);
+    addLog('ESP32 → ' + msg, 'info');
+}
+
+// ─────────────────────────────────────────────────────
+//  Send command to ESP32
+// ─────────────────────────────────────────────────────
+async function send(text) {
+    if (!rxChar) { addLog('Not connected!', 'err'); return; }
+
+    addLog('▶ "' + text + '"', 'sent');
+    transcriptEl.textContent = '"' + text + '"';
+    transcriptEl.style.fontStyle = 'normal';
+    transcriptEl.classList.add('active');
+    flashSent(transcriptEl);
+
+    try {
+        await rxChar.writeValue(new TextEncoder().encode(text));
+    } catch (e) {
+        addLog('Send failed: ' + e.message, 'err');
+    }
+}
+
+function qSend(btn) {
+    const cmd = btn.getAttribute('data-cmd');
+    btn.style.borderColor = 'var(--cyan)';
+    btn.style.background  = 'rgba(0,255,204,0.12)';
+    setTimeout(() => {
+        btn.style.borderColor = '';
+        btn.style.background  = '';
+    }, 250);
+    send(cmd);
+}
+
+// ─────────────────────────────────────────────────────
+//  Speech Recognition Engine with Mobile Fixes
+// ─────────────────────────────────────────────────────
 function initSpeechEngine() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return null;
 
     const r = new SR();
-    // Setting continuous to false makes mobile Chrome yield results much faster and more reliably
-    r.continuous      = false;  
-    r.interimResults  = true;  
-    r.lang            = 'en-US'; // Hardcode to match spoken English commands
+    r.continuous      = true;
+    r.interimResults  = true;
+    r.lang            = 'en-US';
     r.maxAlternatives = 1;
 
-    let lastSentCommand = "";
-    let commandTimer = null;
-
     r.onstart = () => {
-        transcriptEl.textContent = 'Listening...';
+        transcriptEl.textContent = 'listening...';
         transcriptEl.classList.add('active');
         transcriptEl.style.fontStyle = 'italic';
-        lastSentCommand = "";
     };
 
     r.onresult = (ev) => {
-        let transcriptText = '';
-
+        let interim = '', final = '';
         for (let i = ev.resultIndex; i < ev.results.length; i++) {
-            transcriptText += ev.results[i][0].transcript;
+            const t = ev.results[i][0].transcript;
+            if (ev.results[i].isFinal) final += t;
+            else interim += t;
         }
 
-        const cmd = transcriptText.toLowerCase().trim();
-
-        if (cmd) {
+        if (final) {
+            const cmd = final.toLowerCase().trim();
             transcriptEl.textContent = '"' + cmd + '"';
             transcriptEl.style.fontStyle = 'normal';
-
-            // Auto-send command after a brief pause in speaking
-            clearTimeout(commandTimer);
-            commandTimer = setTimeout(() => {
-                if (cmd !== lastSentCommand && isUserListening) {
-                    lastSentCommand = cmd;
-                    flashSent(transcriptEl);
-                    send(cmd);
-                }
-            }, 500); 
+            flashSent(transcriptEl);
+            send(cmd);
+        } else if (interim) {
+            transcriptEl.textContent = interim;
+            transcriptEl.style.fontStyle = 'italic';
         }
     };
 
     r.onerror = (ev) => {
         if (ev.error === 'no-speech' || ev.error === 'aborted') return;
         addLog('Mic error: ' + ev.error, 'err');
+        if (ev.error === 'not-allowed') stopListen();
     };
 
+    // Safe Mobile Restart Logic
     r.onend = () => {
-        // Continuous auto-restart loop for mobile
-        if (isUserListening) {
-            clearTimeout(restartDelay);
-            restartDelay = setTimeout(() => {
-                if (isUserListening) {
-                    try { 
-                        r.start(); 
+        if (listening) {
+            clearTimeout(restartTimer);
+            restartTimer = setTimeout(() => {
+                if (listening) {
+                    try {
+                        r.start();
                     } catch (e) {
-                        // Engine restarting
+                        // Mobile Chrome threw an error on immediate restart
+                        addLog('Restarting mic listener...', 'info');
                     }
                 }
-            }, 100);
+            }, 300); // 300ms buffer prevents Mobile Chrome crash
         }
     };
 
     return r;
 }
+
+function flashSent(el) {
+    el.style.background = 'rgba(0,255,204,0.15)';
+    el.style.transition = 'background 0s';
+    setTimeout(() => {
+        el.style.transition = 'background 0.6s';
+        el.style.background = '';
+    }, 80);
+}
+
+function toggleListen() {
+    listening ? stopListen() : startListen();
+}
+
+async function startListen() {
+    if (!recog) {
+        addLog('Speech Recognition unavailable on this browser.', 'err');
+        return;
+    }
+
+    // Hardware keep-alive for mobile browsers
+    try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        }
+    } catch (e) {
+        addLog('Mic permission denied by mobile OS.', 'err');
+        return;
+    }
+
+    listening = true;
+    micBtn.classList.add('active');
+    micBtn.textContent = '🔴';
+    micHint.textContent = 'LISTENING... CLICK TO STOP';
+
+    try {
+        recog.start();
+    } catch (e) {
+        if (e.name !== 'InvalidStateError') {
+            addLog('Microphone start error: ' + e.message, 'err');
+        }
+    }
+}
+
+function stopListen() {
+    listening = false;
+    clearTimeout(restartTimer);
+    
+    if (recog) {
+        try { recog.stop(); } catch (_) {}
+    }
+
+    // Release Mobile Audio Hardware
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
+
+    micBtn.classList.remove('active');
+    micBtn.textContent = '🎤';
+    transcriptEl.classList.remove('active');
+    transcriptEl.style.fontStyle = '';
+    transcriptEl.style.background = '';
+    transcriptEl.textContent = 'awaiting voice input...';
+    if (connected) micHint.textContent = 'CLICK TO SPEAK';
+}
+
+// ─────────────────────────────────────────────────────
+//  Init checks on load
+// ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+    if (!navigator.bluetooth) {
+        addLog('⚠ Web Bluetooth not available. Use Chrome on Android or PC.', 'err');
+    } else {
+        addLog('Web Bluetooth ready ✓');
+    }
+
+    recog = initSpeechEngine();
+    if (!recog) {
+        addLog('⚠ Speech Recognition not available. Use Chrome.', 'err');
+    } else {
+        addLog('Speech Recognition ready ✓');
+    }
+});
 </script>
 </body>
 </html>
