@@ -195,21 +195,125 @@
         .fix-btn.active { border-color: var(--cyan); background: rgba(0, 255, 204, 0.15); color: var(--cyan); }
         .fix-btn:disabled { opacity: .3; cursor: not-allowed; }
 
-        .fader-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+        .fader-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .global-zero-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .global-zero-btn:hover { border-color: var(--red); color: var(--red); background: rgba(255,68,68,0.08); }
+        .global-zero-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+        .fader-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
         .fader-card {
             background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-            padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 6px;
         }
-        .fader-card label { font-size: 0.6rem; color: var(--dim); text-align: center; }
+        .fader-card label { font-size: 0.55rem; color: var(--dim); text-align: center; line-height: 1.2; }
         .fader-card input[type=range] {
             writing-mode: bt-lr;
             appearance: slider-vertical;
-            width: 24px; height: 140px; cursor: pointer;
+            width: 20px; height: 100px; cursor: pointer;
         }
         .fader-card input[type=range]:disabled { opacity: .35; cursor: not-allowed; }
-        .fader-val { font-size: 0.75rem; color: var(--cyan); }
+        .fader-val { font-size: 0.7rem; color: var(--cyan); }
 
-        #custom-creator-panel { grid-column: 1 / -1; }
+        .fader-btn-row {
+            display: flex;
+            gap: 2px;
+            width: 100%;
+        }
+        .fader-step-btn {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.65rem;
+            padding: 3px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .fader-step-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,255,204,0.08); }
+        .fader-step-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+        /* Programming Interface Controls */
+        .prog-sub-title {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: var(--magenta);
+            text-transform: uppercase;
+            margin: 14px 0 8px 0;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 4px;
+        }
+        .prog-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .prog-btn {
+            flex: 1; padding: 10px 8px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.7rem;
+            letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-align: center;
+            touch-action: manipulation; white-space: nowrap;
+        }
+        .prog-btn:hover { border-color: var(--cyan); background: rgba(0,255,204,0.08); }
+        .prog-btn.active-mode { border-color: var(--cyan); background: rgba(0,255,204,0.2); color: var(--cyan); }
+        .prog-btn.danger-btn:hover { border-color: var(--red); background: rgba(255,68,68,0.08); color: var(--red); }
+        .prog-btn.confirm-yes { border-color: var(--cyan); color: var(--cyan); }
+        .prog-btn.confirm-yes:hover { background: rgba(0,255,204,0.2); }
+        .prog-btn.confirm-no { border-color: var(--red); color: var(--red); }
+        .prog-btn.confirm-no:hover { background: rgba(255,68,68,0.2); }
+        .prog-btn:disabled { opacity: .3; cursor: not-allowed; }
+        
+        .bank-selector {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+            padding: 6px 12px; margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .bank-num { font-size: 0.8rem; color: var(--cyan); font-weight: bold; }
+        .arrow-btn {
+            background: var(--surface); border: 1px solid var(--border); color: var(--text);
+            width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .arrow-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+        .arrow-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+        .delete-confirm-box {
+            display: none;
+            width: 100%;
+            background: rgba(255,68,68,0.06);
+            border: 1px solid var(--red);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .delete-confirm-box.show { display: block; }
+        .delete-confirm-title {
+            font-size: 0.65rem;
+            color: var(--red);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        #quick-type-panel, #custom-creator-panel { grid-column: 1 / -1; }
 
         .creator-form { display: flex; gap: 10px; flex-wrap: wrap; }
         .cmd-input {
@@ -218,6 +322,7 @@
             outline: none; transition: border-color 0.2s; min-width: 120px;
         }
         .cmd-input:focus { border-color: var(--cyan); }
+        #quick-type-cmd { flex: 1 1 240px; }
         #custom-label { flex: 1 1 180px; }
         #custom-cmd   { flex: 2 1 240px; }
 
@@ -228,6 +333,7 @@
             touch-action: manipulation;
         }
         .add-btn:hover { background: rgba(0,255,204,.1); box-shadow: 0 0 10px rgba(0,255,204,.2); }
+        .add-btn:disabled { opacity: .3; cursor: not-allowed; border-color: var(--border); color: var(--dim); box-shadow: none; }
 
         #quick-panel { grid-column: 1 / -1; }
 
@@ -288,7 +394,9 @@
             .fader-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
             .quick-grid { grid-template-columns: repeat(2, 1fr); }
             .creator-form { flex-direction: column; }
-            #custom-label, #custom-cmd, .add-btn { width: 100%; flex: 1 1 100%; }
+            #quick-type-cmd, #custom-label, #custom-cmd, .add-btn { width: 100%; flex: 1 1 100%; }
+            .bank-selector { flex-direction: column; align-items: stretch; }
+            .bank-selector-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         }
     </style>
 </head>
@@ -320,72 +428,30 @@
         <div id="transcript">awaiting voice input...</div>
     </div>
 
-    <div class="card full-width">
-        <div class="card-title">Target Fixture Selection (Multi-Select Supported)</div>
-        <div class="info-row" style="margin-bottom: 12px;">
-            Targeting Fixtures: <span id="target-fix-lbl" style="color:var(--cyan)">1</span>
-        </div>
-        <div class="fixture-grid">
-            <button class="fix-btn active" id="fbtn-1" onclick="toggleFixture(1)" disabled>FIX 1: ON</button>
-            <button class="fix-btn" id="fbtn-2" onclick="toggleFixture(2)" disabled>FIX 2: OFF</button>
-            <button class="fix-btn" id="fbtn-3" onclick="toggleFixture(3)" disabled>FIX 3: OFF</button>
-            <button class="fix-btn" id="fbtn-4" onclick="toggleFixture(4)" disabled>FIX 4: OFF</button>
-        </div>
-
-        <div class="card-title">6-Channel 10-Step Faders (0 → 255)</div>
-        <div class="fader-grid">
-            <div class="fader-card">
-                <label>CH 1<br>DIMMER</label>
-                <input type="range" id="slider-1" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(1, this.value)" disabled>
-                <span class="fader-val" id="v-1">0</span>
-            </div>
-            <div class="fader-card">
-                <label>CH 2<br>RED</label>
-                <input type="range" id="slider-2" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(2, this.value)" disabled>
-                <span class="fader-val" id="v-2">0</span>
-            </div>
-            <div class="fader-card">
-                <label>CH 3<br>GREEN</label>
-                <input type="range" id="slider-3" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(3, this.value)" disabled>
-                <span class="fader-val" id="v-3">0</span>
-            </div>
-            <div class="fader-card">
-                <label>CH 4<br>BLUE</label>
-                <input type="range" id="slider-4" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(4, this.value)" disabled>
-                <span class="fader-val" id="v-4">0</span>
-            </div>
-            <div class="fader-card">
-                <label>CH 5<br>STROBE</label>
-                <input type="range" id="slider-5" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(5, this.value)" disabled>
-                <span class="fader-val" id="v-5">0</span>
-            </div>
-            <div class="fader-card">
-                <label>CH 6<br>SPECIAL</label>
-                <input type="range" id="slider-6" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(6, this.value)" disabled>
-                <span class="fader-val" id="v-6">0</span>
-            </div>
+    <!-- Quick Type Command Card -->
+    <div class="card" id="quick-type-panel">
+        <div class="card-title">Quick Type Command</div>
+        <div class="creator-form">
+            <input type="text" id="quick-type-cmd" class="cmd-input" placeholder="Type command (e.g. blackout)" onkeydown="handleQuickTypeKey(event)">
+            <button id="quick-type-btn" class="add-btn" onclick="sendQuickTypedCommand()" disabled>SEND COMMAND</button>
         </div>
     </div>
 
+    <!-- Custom Command Creator Card -->
     <div class="card" id="custom-creator-panel">
         <div class="card-title">Add Custom Command</div>
         <div class="creator-form">
             <input type="text" id="custom-label" class="cmd-input" placeholder="Label (e.g. STROBE)" maxlength="12">
             <input type="text" id="custom-cmd" class="cmd-input" placeholder="Command (e.g. strobe fast)">
-            <button class="add-btn" onclick="addCustomCommand()">+ SAVE COMMAND</button>
+            <button id="save-custom-btn" class="add-btn" onclick="addCustomCommand()" disabled>+ SAVE COMMAND</button>
         </div>
     </div>
 
+    <!-- Quick Commands Grid Card -->
     <div class="card" id="quick-panel">
         <div class="card-title">Quick Commands</div>
         <div class="quick-grid" id="quick-grid">
-            <div class="qbtn-wrapper">
-                <button class="qbtn" data-cmd="scene 1" onclick="qSend(this)" disabled>
-                    <span class="icon">🎉</span>
-                    <span>SCENE 1</span>
-                    <span class="kw">"party"</span>
-                </button>
-            </div>
+            
             <div class="qbtn-wrapper">
                 <button class="qbtn" data-cmd="white" onclick="qSend(this)" disabled>
                     <span class="icon">💡</span>
@@ -410,6 +476,216 @@
         </div>
     </div>
 
+    <!-- Target Fixture & Fader Controller -->
+    <div class="card full-width">
+        <div class="card-title">Target Fixture Selection (Multi-Select Supported)</div>
+        <div class="info-row" style="margin-bottom: 12px;">
+            Targeting Fixtures: <span id="target-fix-lbl" style="color:var(--cyan)">1</span>
+        </div>
+        <div class="fixture-grid">
+            <button class="fix-btn active" id="fbtn-1" onclick="toggleFixture(1)" disabled>FIX 1: ON</button>
+            <button class="fix-btn" id="fbtn-2" onclick="toggleFixture(2)" disabled>FIX 2: OFF</button>
+            <button class="fix-btn" id="fbtn-3" onclick="toggleFixture(3)" disabled>FIX 3: OFF</button>
+            <button class="fix-btn" id="fbtn-4" onclick="toggleFixture(4)" disabled>FIX 4: OFF</button>
+        </div>
+
+        <div class="fader-header-row">
+            <div class="card-title" style="margin-bottom:0;">6-Channel 10-Step Faders (0 → 255)</div>
+            <button class="global-zero-btn" id="global-zero-btn" onclick="zeroAllFaders()" disabled>[ ZERO ALL FADERS ]</button>
+        </div>
+
+        <div class="fader-grid">
+            <!-- CH 1 -->
+            <div class="fader-card">
+                <label>CH 1<br>DIMMER</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(1, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-1" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(1, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(1, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(1, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(1, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-1">0</span>
+            </div>
+            <!-- CH 2 -->
+            <div class="fader-card">
+                <label>CH 2<br>RED</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(2, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-2" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(2, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(2, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(2, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(2, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-2">0</span>
+            </div>
+            <!-- CH 3 -->
+            <div class="fader-card">
+                <label>CH 3<br>GREEN</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(3, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-3" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(3, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(3, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(3, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(3, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-3">0</span>
+            </div>
+            <!-- CH 4 -->
+            <div class="fader-card">
+                <label>CH 4<br>BLUE</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(4, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-4" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(4, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(4, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(4, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(4, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-4">0</span>
+            </div>
+            <!-- CH 5 -->
+            <div class="fader-card">
+                <label>CH 5<br>STROBE</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(5, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-5" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(5, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(5, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(5, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(5, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-5">0</span>
+            </div>
+            <!-- CH 6 -->
+            <div class="fader-card">
+                <label>CH 6<br>SPECIAL</label>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(6, 9)" title="Max 255" disabled>255</button>
+                </div>
+                <input type="range" id="slider-6" class="fader-input" min="0" max="9" value="0" step="1" oninput="sendChannelStep(6, this.value)" disabled>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="adjustFaderStep(6, -1)" title="Step Down" disabled>−</button>
+                    <button class="fader-step-btn" onclick="adjustFaderStep(6, 1)" title="Step Up" disabled>+</button>
+                </div>
+                <div class="fader-btn-row">
+                    <button class="fader-step-btn" onclick="setFaderEndpoint(6, 0)" title="Min 0" disabled>0</button>
+                </div>
+                <span class="fader-val" id="v-6">0</span>
+            </div>
+        </div>
+
+        <!-- Global Program Controls -->
+        <div class="prog-btn-row">
+            <button class="prog-btn" id="enter-programming-btn" onclick="triggerEnterProgramming()" disabled>ENTER PROGRAMMING</button>
+            <button class="prog-btn pctrl" id="exit-program-btn" onclick="triggerExitProgram()" disabled>EXIT PROGRAM</button>
+        </div>
+
+        <!-- Bank Programming Section -->
+        <div class="prog-sub-title">Bank Programming</div>
+        <div class="prog-btn-row">
+            <button class="prog-btn prog-entry-ctrl" id="enter-bank-btn" onclick="enterBankProgramming()" disabled>ENTER BANK PROGRAMMING</button>
+        </div>
+
+        <div class="prog-btn-row">
+            <button class="prog-btn bank-pctrl" onclick="send('previous')" disabled>PREVIOUS BANK</button>
+            <button class="prog-btn bank-pctrl" onclick="send('add')" disabled>ADD SCENE</button>
+            <button class="prog-btn bank-pctrl" onclick="send('next')" disabled>NEXT BANK</button>
+        </div>
+
+        <!-- Scene Replace Section with Confirmation -->
+        <div class="bank-selector" style="margin-bottom: 10px;">
+            <div class="bank-selector-nav" style="display:flex; align-items:center; gap:8px;">
+                <button class="arrow-btn bank-pctrl" onclick="changeSceneNum(-1)" disabled>◄</button>
+                <span class="bank-num" id="scene-disp" style="color:var(--magenta)">SCENE 1</span>
+                <button class="arrow-btn bank-pctrl" onclick="changeSceneNum(1)" disabled>►</button>
+            </div>
+            <div style="display:flex; gap:8px; flex: 1 1 auto; justify-content: flex-end;">
+                <button class="prog-btn bank-pctrl" style="flex:1 1 auto; max-width: 180px;" onclick="sendReplaceScene()" disabled>REPLACE SCENE</button>
+            </div>
+
+            <!-- Replace Confirmation Box -->
+            <div id="replace-confirm-box" class="delete-confirm-box">
+                <div class="delete-confirm-title" id="replace-confirm-lbl">CONFIRM REPLACE SCENE 1?</div>
+                <div class="prog-btn-row" style="margin-bottom:0;">
+                    <button class="prog-btn confirm-yes bank-pctrl" onclick="confirmReplaceScene(true)" disabled>YES</button>
+                    <button class="prog-btn confirm-no bank-pctrl" onclick="confirmReplaceScene(false)" disabled>NO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Control Selector -->
+        <div class="bank-selector">
+            <div class="bank-selector-nav" style="display:flex; align-items:center; gap:8px;">
+                <button class="arrow-btn bank-pctrl" onclick="changeBank('prog', -1)" disabled>◄</button>
+                <span class="bank-num" id="bank-disp">BANK 1</span>
+                <button class="arrow-btn bank-pctrl" onclick="changeBank('prog', 1)" disabled>►</button>
+            </div>
+            <div style="display:flex; gap:8px; flex: 1 1 auto; justify-content: flex-end;">
+                <button class="prog-btn bank-pctrl danger-btn" style="flex:1 1 auto; max-width: 150px;" onclick="promptDeleteBank('prog')" disabled>DELETE BANK</button>
+            </div>
+
+            <!-- Delete Confirmation Box -->
+            <div id="delete-confirm-box" class="delete-confirm-box">
+                <div class="delete-confirm-title" id="delete-confirm-lbl">DELETE BANK 1 FROM PROGRAMMING?</div>
+                <div class="prog-btn-row" style="margin-bottom:0;">
+                    <button class="prog-btn confirm-yes bank-pctrl" onclick="confirmDeleteBank('prog', true)" disabled>YES</button>
+                    <button class="prog-btn confirm-no bank-pctrl" onclick="confirmDeleteBank('prog', false)" disabled>NO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chase Programming Section -->
+        <div class="prog-sub-title">Chase Programming</div>
+        <div class="prog-btn-row">
+            <button class="prog-btn prog-entry-ctrl" id="enter-chase-btn" onclick="enterChaseProgramming()" disabled>ENTER CHASE PROGRAMMING</button>
+        </div>
+        <div class="prog-btn-row">
+            <button class="prog-btn chase-pctrl" onclick="send('chase one')" disabled>JUMP TO CHASE 01</button>
+            <button class="prog-btn chase-pctrl" onclick="send('previous')" disabled>PREVIOUS</button>
+            <button class="prog-btn chase-pctrl" onclick="send('next')" disabled>NEXT</button>
+        </div>
+
+        <div class="bank-selector">
+            <div class="bank-selector-nav" style="display:flex; align-items:center; gap:8px;">
+                <button class="arrow-btn chase-pctrl" onclick="changeBank('chase', -1)" disabled>◄</button>
+                <span class="bank-num" id="bank-disp-chase">BANK 1</span>
+                <button class="arrow-btn chase-pctrl" onclick="changeBank('chase', 1)" disabled>►</button>
+            </div>
+            <div style="display:flex; gap:8px; flex: 1 1 auto; justify-content: flex-end;">
+                <button class="prog-btn chase-pctrl" style="flex:1 1 auto; max-width: 150px;" onclick="sendAddBank('chase')" disabled>ADD BANK</button>
+                <button class="prog-btn chase-pctrl danger-btn" style="flex:1 1 auto; max-width: 150px;" onclick="promptDeleteBank('chase')" disabled>DELETE BANK</button>
+            </div>
+
+            <!-- Confirmation Box -->
+            <div id="delete-confirm-box-chase" class="delete-confirm-box">
+                <div class="delete-confirm-title" id="delete-confirm-lbl-chase">DELETE BANK 1 FROM CHASE?</div>
+                <div class="prog-btn-row" style="margin-bottom:0;">
+                    <button class="prog-btn confirm-yes chase-pctrl" onclick="confirmDeleteBank('chase', true)" disabled>YES</button>
+                    <button class="prog-btn confirm-no chase-pctrl" onclick="confirmDeleteBank('chase', false)" disabled>NO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card" id="log-panel">
         <div class="log-header">
             <div class="card-title" style="margin:0">Console Output Log</div>
@@ -427,18 +703,24 @@ const SVC_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX_UUID  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; 
 const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; 
 
-// Discrete 10-step mapping table
 const STEP_VALUES = [0, 50, 75, 100, 125, 150, 175, 200, 225, 255];
 
-let bleDevice     = null;
-let rxChar        = null;
-let connected     = false;
-let listening     = false;
-let recog         = null;
-let isStarting    = false;
-let customCmds    = [];
+let bleDevice        = null;
+let rxChar           = null;
+let connected        = false;
+let listening        = false;
+let recog            = null;
+let isStarting       = false;
+let customCmds       = [];
 
-let fixStates     = {1: true, 2: false, 3: false, 4: false};
+let isProgModeActive  = false;
+let activeSubMode     = null; // 'bank' or 'chase'
+
+let progSelectedBank  = 1;
+let chaseSelectedBank = 1;
+let selectedSceneNum  = 1;
+
+let fixStates        = {1: true, 2: false, 3: false, 4: false};
 
 let cmdQueue = [];
 let isSending = false;
@@ -476,10 +758,76 @@ function setUIConnected(yes) {
     connectBtn.disabled = false;
     connectBtn.className = yes ? 'disco' : '';
     
-    document.querySelectorAll('.qbtn, .fix-btn, .fader-input').forEach(b => b.disabled = !yes);
+    document.querySelectorAll('.qbtn, .fix-btn, .fader-input, .fader-step-btn, #global-zero-btn, #enter-programming-btn, #exit-program-btn, #quick-type-btn, #save-custom-btn').forEach(b => b.disabled = !yes);
     
+    setProgModeActive(false);
+
     micBtn.disabled = !yes;
     micHint.textContent = yes ? 'CLICK TO SPEAK' : 'CONNECT FIRST';
+}
+
+function setProgModeActive(active) {
+    isProgModeActive = active;
+    if (!active) activeSubMode = null;
+    
+    const enterProgBtn = document.getElementById('enter-programming-btn');
+    if (enterProgBtn) {
+        if (active) enterProgBtn.classList.add('active-mode');
+        else enterProgBtn.classList.remove('active-mode');
+    }
+
+    document.querySelectorAll('.prog-entry-ctrl').forEach(b => {
+        b.disabled = !connected || !isProgModeActive;
+    });
+
+    updateSubModeUI();
+}
+
+function updateSubModeUI() {
+    const bankControls = document.querySelectorAll('.bank-pctrl');
+    const chaseControls = document.querySelectorAll('.chase-pctrl');
+    const enterBankBtn = document.getElementById('enter-bank-btn');
+    const enterChaseBtn = document.getElementById('enter-chase-btn');
+
+    const canInteract = connected && isProgModeActive;
+
+    bankControls.forEach(b => {
+        b.disabled = !canInteract || activeSubMode !== 'bank';
+    });
+    chaseControls.forEach(b => {
+        b.disabled = !canInteract || activeSubMode !== 'chase';
+    });
+
+    if (enterBankBtn) {
+        if (activeSubMode === 'bank') enterBankBtn.classList.add('active-mode');
+        else enterBankBtn.classList.remove('active-mode');
+    }
+    if (enterChaseBtn) {
+        if (activeSubMode === 'chase') enterChaseBtn.classList.add('active-mode');
+        else enterChaseBtn.classList.remove('active-mode');
+    }
+}
+
+function triggerEnterProgramming() {
+    send('program on');
+    setProgModeActive(true);
+}
+
+function triggerExitProgram() {
+    send('exit program');
+    setProgModeActive(false);
+}
+
+function enterBankProgramming() {
+    activeSubMode = 'bank';
+    send('program on');
+    updateSubModeUI();
+}
+
+function enterChaseProgramming() {
+    activeSubMode = 'chase';
+    send('chase one');
+    updateSubModeUI();
 }
 
 async function toggleConnect() {
@@ -602,6 +950,23 @@ function qSend(btn) {
     send(cmd);
 }
 
+function sendQuickTypedCommand() {
+    const input = document.getElementById('quick-type-cmd');
+    const cmd = input.value.trim();
+    if (!cmd) {
+        addLog('Please enter a command to send.', 'err');
+        return;
+    }
+    send(cmd);
+    input.value = '';
+}
+
+function handleQuickTypeKey(e) {
+    if (e.key === 'Enter') {
+        sendQuickTypedCommand();
+    }
+}
+
 function toggleFixture(id) {
     fixStates[id] = !fixStates[id];
     
@@ -621,7 +986,6 @@ function toggleFixture(id) {
     document.getElementById('target-fix-lbl').textContent = activeList.length > 0 ? activeList.join(', ') : 'None';
 }
 
-// Map index step (0-9) directly to [0, 50, 75, 100, 125, 150, 175, 200, 225, 255]
 function sendChannelStep(chOffset, stepIndex) {
     const idx = parseInt(stepIndex, 10);
     const numericValue = STEP_VALUES[idx] !== undefined ? STEP_VALUES[idx] : 0;
@@ -636,6 +1000,126 @@ function sendChannelStep(chOffset, stepIndex) {
         const baseAddr = (parseInt(fixId, 10) - 1) * 16;
         const absoluteDmxCh = baseAddr + parseInt(chOffset, 10);
         send(`ch ${absoluteDmxCh} ${numericValue}`);
+    }
+}
+
+function adjustFaderStep(chOffset, direction) {
+    const slider = document.getElementById(`slider-${chOffset}`);
+    if (!slider || slider.disabled) return;
+    
+    let currentVal = parseInt(slider.value, 10);
+    let newVal = currentVal + direction;
+    
+    if (newVal < 0) newVal = 0;
+    if (newVal > 9) newVal = 9;
+    
+    if (newVal !== currentVal) {
+        slider.value = newVal;
+        sendChannelStep(chOffset, newVal);
+    }
+}
+
+function setFaderEndpoint(chOffset, stepIndex) {
+    const slider = document.getElementById(`slider-${chOffset}`);
+    if (!slider || slider.disabled) return;
+    
+    let newVal = parseInt(stepIndex, 10);
+    if (newVal !== parseInt(slider.value, 10)) {
+        slider.value = newVal;
+        sendChannelStep(chOffset, newVal);
+    }
+}
+
+function zeroAllFaders() {
+    for (let ch = 1; ch <= 6; ch++) {
+        const slider = document.getElementById(`slider-${ch}`);
+        if (slider && !slider.disabled) {
+            slider.value = 0;
+            sendChannelStep(ch, 0);
+        }
+    }
+    addLog('All faders reset to 0.', 'info');
+}
+
+function changeBank(section, delta) {
+    if (section === 'prog') {
+        progSelectedBank += delta;
+        if (progSelectedBank < 1) progSelectedBank = 100;
+        if (progSelectedBank > 100) progSelectedBank = 1;
+        const dispBank = document.getElementById('bank-disp');
+        if (dispBank) dispBank.textContent = `BANK ${progSelectedBank}`;
+    } else if (section === 'chase') {
+        chaseSelectedBank += delta;
+        if (chaseSelectedBank < 1) chaseSelectedBank = 100;
+        if (chaseSelectedBank > 100) chaseSelectedBank = 1;
+        const dispBankChase = document.getElementById('bank-disp-chase');
+        if (dispBankChase) dispBankChase.textContent = `BANK ${chaseSelectedBank}`;
+    }
+}
+
+function changeSceneNum(delta) {
+    selectedSceneNum += delta;
+    if (selectedSceneNum < 1) selectedSceneNum = 10;
+    if (selectedSceneNum > 10) selectedSceneNum = 1;
+    const disp = document.getElementById('scene-disp');
+    if (disp) disp.textContent = `SCENE ${selectedSceneNum}`;
+}
+
+function sendReplaceScene() {
+    send(`replace scene ${selectedSceneNum}`);
+    
+    const confirmLbl = document.getElementById('replace-confirm-lbl');
+    if (confirmLbl) confirmLbl.textContent = `CONFIRM REPLACE SCENE ${selectedSceneNum}?`;
+    const confirmBox = document.getElementById('replace-confirm-box');
+    if (confirmBox) confirmBox.classList.add('show');
+}
+
+function confirmReplaceScene(isYes) {
+    const confirmBox = document.getElementById('replace-confirm-box');
+    if (confirmBox) confirmBox.classList.remove('show');
+
+    if (isYes) {
+        send('yes');
+    } else {
+        send('no');
+    }
+}
+
+function sendAddBank(section) {
+    const bNum = section === 'prog' ? progSelectedBank : chaseSelectedBank;
+    send(`add bank ${bNum}`);
+}
+
+function promptDeleteBank(section) {
+    const bNum = section === 'prog' ? progSelectedBank : chaseSelectedBank;
+    send(`delete bank ${bNum}`);
+    
+    if (section === 'prog') {
+        const confirmLbl = document.getElementById('delete-confirm-lbl');
+        if (confirmLbl) confirmLbl.textContent = `CONFIRM DELETE BANK ${bNum}?`;
+        const confirmBox = document.getElementById('delete-confirm-box');
+        if (confirmBox) confirmBox.classList.add('show');
+    } else if (section === 'chase') {
+        const confirmLblChase = document.getElementById('delete-confirm-lbl-chase');
+        if (confirmLblChase) confirmLblChase.textContent = `CONFIRM DELETE BANK ${bNum} FROM CHASE?`;
+        const confirmBoxChase = document.getElementById('delete-confirm-box-chase');
+        if (confirmBoxChase) confirmBoxChase.classList.add('show');
+    }
+}
+
+function confirmDeleteBank(section, isYes) {
+    if (section === 'prog') {
+        const confirmBox = document.getElementById('delete-confirm-box');
+        if (confirmBox) confirmBox.classList.remove('show');
+    } else if (section === 'chase') {
+        const confirmBoxChase = document.getElementById('delete-confirm-box-chase');
+        if (confirmBoxChase) confirmBoxChase.classList.remove('show');
+    }
+
+    if (isYes) {
+        send('yes');
+    } else {
+        send('no');
     }
 }
 
