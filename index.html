@@ -143,7 +143,6 @@
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 14px;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
         #mic-btn:hover         { border-color: var(--cyan); color: var(--cyan); }
         #mic-btn:disabled      { opacity: .3; cursor: not-allowed; }
@@ -364,13 +363,12 @@ const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // notify ← ESP32
 // ─────────────────────────────────────────────────────
 //  State
 // ─────────────────────────────────────────────────────
-let bleDevice   = null;
-let rxChar      = null;
-let connected   = false;
-let listening   = false;
-let recog       = null;
-let audioStream = null; // Keeps hardware mic active on Mobile
-let restartTimer = null;
+let bleDevice  = null;
+let rxChar     = null;
+let connected  = false;
+let listening  = false;
+let recog      = null;
+let isStarting = false;
 
 // Cached DOM refs
 const logEl        = document.getElementById('log');
@@ -520,7 +518,7 @@ function qSend(btn) {
 }
 
 // ─────────────────────────────────────────────────────
-//  Speech Recognition Engine with Mobile Fixes
+//  Speech Recognition — Continuous & Reusable Instance
 // ─────────────────────────────────────────────────────
 function initSpeechEngine() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -533,6 +531,7 @@ function initSpeechEngine() {
     r.maxAlternatives = 1;
 
     r.onstart = () => {
+        isStarting = false;
         transcriptEl.textContent = 'listening...';
         transcriptEl.classList.add('active');
         transcriptEl.style.fontStyle = 'italic';
@@ -559,25 +558,24 @@ function initSpeechEngine() {
     };
 
     r.onerror = (ev) => {
-        if (ev.error === 'no-speech' || ev.error === 'aborted') return;
+        if (ev.error === 'no-speech') return; // Silence is expected, ignore
         addLog('Mic error: ' + ev.error, 'err');
         if (ev.error === 'not-allowed') stopListen();
     };
 
-    // Safe Mobile Restart Logic
+    // Auto-restart delay to handle Chrome timeout cleanly
     r.onend = () => {
         if (listening) {
-            clearTimeout(restartTimer);
-            restartTimer = setTimeout(() => {
-                if (listening) {
+            setTimeout(() => {
+                if (listening && recog && !isStarting) {
                     try {
-                        r.start();
-                    } catch (e) {
-                        // Mobile Chrome threw an error on immediate restart
-                        addLog('Restarting mic listener...', 'info');
+                        isStarting = true;
+                        recog.start();
+                    } catch (_) {
+                        isStarting = false;
                     }
                 }
-            }, 300); // 300ms buffer prevents Mobile Chrome crash
+            }, 100);
         }
     };
 
@@ -597,30 +595,21 @@ function toggleListen() {
     listening ? stopListen() : startListen();
 }
 
-async function startListen() {
+function startListen() {
     if (!recog) {
         addLog('Speech Recognition unavailable on this browser.', 'err');
         return;
     }
-
-    // Hardware keep-alive for mobile browsers
-    try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        }
-    } catch (e) {
-        addLog('Mic permission denied by mobile OS.', 'err');
-        return;
-    }
-
     listening = true;
     micBtn.classList.add('active');
     micBtn.textContent = '🔴';
     micHint.textContent = 'LISTENING... CLICK TO STOP';
 
     try {
+        isStarting = true;
         recog.start();
     } catch (e) {
+        isStarting = false;
         if (e.name !== 'InvalidStateError') {
             addLog('Microphone start error: ' + e.message, 'err');
         }
@@ -629,18 +618,10 @@ async function startListen() {
 
 function stopListen() {
     listening = false;
-    clearTimeout(restartTimer);
-    
+    isStarting = false;
     if (recog) {
         try { recog.stop(); } catch (_) {}
     }
-
-    // Release Mobile Audio Hardware
-    if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-    }
-
     micBtn.classList.remove('active');
     micBtn.textContent = '🎤';
     transcriptEl.classList.remove('active');
