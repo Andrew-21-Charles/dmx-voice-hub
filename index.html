@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMX Voice & Surface Hub</title>
+    <title>DMX Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:       #0a0a12;
-            --surface:  #12121e;
-            --surface2: #1a1a2e;
-            --cyan:     #00ffcc;
-            --magenta:  #ff00aa;
-            --red:      #ff4444;
-            --text:     #e0e0e0;
-            --dim:      #666688;
-            --border:   #2a2a44;
+            --bg:       #0d1117;
+            --surface:  #161b22;
+            --surface2: #21262d;
+            --cyan:     #38bdf8;
+            --magenta:  #f472b6;
+            --red:      #f87171;
+            --text:     #f0f6fc;
+            --dim:      #8b949e;
+            --border:   #30363d;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,34 +25,36 @@
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'Courier New', monospace;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
+        code, .fader-val, .bank-num, .logo, .kw, .ts {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 14px 20px;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
         .logo {
-            font-size: 1rem;
-            font-weight: bold;
-            letter-spacing: 3px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 2px;
             color: var(--cyan);
-            text-shadow: 0 0 12px var(--cyan);
             white-space: nowrap;
         }
         .logo em {
             color: var(--magenta);
-            text-shadow: 0 0 12px var(--magenta);
             font-style: normal;
         }
 
@@ -58,8 +63,9 @@
             align-items: center;
             gap: 8px;
             font-size: 0.75rem;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             color: var(--dim);
+            font-weight: 500;
         }
 
         .dot {
@@ -75,11 +81,11 @@
 
         main {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            max-width: 950px;
+            gap: 20px;
+            max-width: 960px;
             margin: 0 auto;
             width: 100%;
         }
@@ -87,15 +93,16 @@
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 18px;
+            border-radius: 12px;
+            padding: 20px;
         }
         .card-title {
-            font-size: 0.65rem;
-            letter-spacing: 3px;
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
             color: var(--dim);
             text-transform: uppercase;
             margin-bottom: 14px;
+            font-weight: 600;
         }
 
         #ble-panel { grid-column: span 1; }
@@ -104,23 +111,24 @@
             width: 100%;
             padding: 12px;
             background: transparent;
-            border: 2px solid var(--cyan);
+            border: 1px solid var(--cyan);
             color: var(--cyan);
             font-family: inherit;
-            font-size: 0.82rem;
-            letter-spacing: 2px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: all 0.2s;
             margin-bottom: 12px;
         }
-        #connect-btn:hover       { background: rgba(0,255,204,.08); box-shadow: 0 0 14px rgba(0,255,204,.25); }
+        #connect-btn:hover       { background: rgba(56,189,248,.08); box-shadow: 0 0 12px rgba(56,189,248,.2); }
         #connect-btn.disco       { border-color: var(--red); color: var(--red); }
-        #connect-btn.disco:hover { background: rgba(255,68,68,.08); box-shadow: 0 0 14px rgba(255,68,68,.25); }
+        #connect-btn.disco:hover { background: rgba(248,113,113,.08); box-shadow: 0 0 12px rgba(248,113,113,.2); }
         #connect-btn:disabled    { opacity: .35; cursor: not-allowed; }
 
-        .info-row { font-size: 0.75rem; color: var(--dim); line-height: 1.8; word-break: break-all; }
-        .info-row span { color: var(--text); }
+        .info-row { font-size: 0.8rem; color: var(--dim); line-height: 1.8; word-break: break-all; }
+        .info-row span { color: var(--text); font-weight: 500; }
 
         #voice-panel {
             grid-column: span 1;
@@ -133,7 +141,7 @@
             width: 88px; height: 88px;
             border-radius: 50%;
             background: var(--surface2);
-            border: 3px solid var(--border);
+            border: 2px solid var(--border);
             color: var(--dim);
             font-size: 2rem;
             cursor: pointer;
@@ -143,56 +151,57 @@
             user-select: none;
             touch-action: manipulation;
         }
-        #mic-btn:hover         { border-color: var(--cyan); color: var(--cyan); }
-        #mic-btn:disabled      { opacity: .3; cursor: not-allowed; }
+        #mic-btn:hover           { border-color: var(--cyan); color: var(--cyan); }
+        #mic-btn.disabled        { opacity: .3; cursor: not-allowed; }
         #mic-btn.active {
             border-color: var(--magenta);
             color: var(--magenta);
-            box-shadow: 0 0 24px rgba(255,0,170,.45);
+            box-shadow: 0 0 20px rgba(244,114,182,.35);
             animation: micpulse 1s infinite;
         }
         @keyframes micpulse {
-            0%,100%{ box-shadow: 0 0 20px rgba(255,0,170,.4); }
-            50%    { box-shadow: 0 0 38px rgba(255,0,170,.75); }
+            0%,100%{ box-shadow: 0 0 16px rgba(244,114,182,.3); }
+            50%    { box-shadow: 0 0 32px rgba(244,114,182,.6); }
         }
 
         #mic-hint {
-            font-size: 0.65rem;
-            letter-spacing: 2px;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
             color: var(--dim);
             margin-bottom: 12px;
             text-align: center;
+            font-weight: 500;
         }
 
         #transcript {
             width: 100%;
             background: var(--surface2);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px;
-            min-height: 42px;
-            font-size: 0.8rem;
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 44px;
+            font-size: 0.85rem;
             color: var(--dim);
             font-style: italic;
             text-align: center;
-            transition: border-color 0.2s, color 0.2s;
+            transition: border-color 0.2s, color 0.2s, background 0.6s;
             word-break: break-word;
         }
         #transcript.active {
             border-color: var(--cyan);
             color: var(--cyan);
-            transition: border-color 0.2s, color 0.2s, background 0.6s;
+            font-style: normal;
         }
 
         .full-width { grid-column: 1 / -1; }
         
         .fixture-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .fix-btn {
-            padding: 12px 6px; background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 6px; color: var(--text); font-family: inherit; cursor: pointer; text-align: center;
+            padding: 12px 8px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: inherit; font-weight: 500; cursor: pointer; text-align: center;
             font-size: 0.75rem; transition: all 0.2s;
         }
-        .fix-btn.active { border-color: var(--cyan); background: rgba(0, 255, 204, 0.15); color: var(--cyan); }
+        .fix-btn.active { border-color: var(--cyan); background: rgba(56, 189, 248, 0.12); color: var(--cyan); font-weight: 600; }
         .fix-btn:disabled { opacity: .3; cursor: not-allowed; }
 
         .fader-header-row {
@@ -209,29 +218,30 @@
             border: 1px solid var(--border);
             color: var(--text);
             font-family: inherit;
-            font-size: 0.65rem;
+            font-weight: 500;
+            font-size: 0.7rem;
             letter-spacing: 1px;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .global-zero-btn:hover { border-color: var(--red); color: var(--red); background: rgba(255,68,68,0.08); }
+        .global-zero-btn:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.08); }
         .global-zero-btn:disabled { opacity: .3; cursor: not-allowed; }
 
         .fader-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
         .fader-card {
-            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-            padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
-        .fader-card label { font-size: 0.55rem; color: var(--dim); text-align: center; line-height: 1.2; }
+        .fader-card label { font-size: 0.6rem; color: var(--dim); text-align: center; line-height: 1.3; font-weight: 600; }
         .fader-card input[type=range] {
             writing-mode: bt-lr;
             appearance: slider-vertical;
-            width: 20px; height: 100px; cursor: pointer;
+            width: 20px; height: 110px; cursor: pointer;
         }
         .fader-card input[type=range]:disabled { opacity: .35; cursor: not-allowed; }
-        .fader-val { font-size: 0.7rem; color: var(--cyan); }
+        .fader-val { font-size: 0.75rem; color: var(--cyan); font-weight: 600; }
 
         .fader-btn-row {
             display: flex;
@@ -244,51 +254,51 @@
             border: 1px solid var(--border);
             color: var(--text);
             font-family: inherit;
-            font-size: 0.65rem;
-            padding: 3px 0;
-            border-radius: 3px;
+            font-size: 0.7rem;
+            padding: 4px 0;
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
         }
-        .fader-step-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,255,204,0.08); }
+        .fader-step-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(56,189,248,0.08); }
         .fader-step-btn:disabled { opacity: .3; cursor: not-allowed; }
 
-        /* Programming Interface Controls */
         .prog-sub-title {
-            font-size: 0.6rem;
-            letter-spacing: 2px;
+            font-size: 0.65rem;
+            letter-spacing: 1.5px;
             color: var(--magenta);
             text-transform: uppercase;
-            margin: 14px 0 8px 0;
+            margin: 16px 0 10px 0;
             border-bottom: 1px dashed var(--border);
-            padding-bottom: 4px;
+            padding-bottom: 6px;
+            font-weight: 600;
         }
         .prog-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
         .prog-btn {
-            flex: 1; padding: 10px 8px; background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.7rem;
-            letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-align: center;
+            flex: 1; padding: 10px 10px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.75rem; font-weight: 500;
+            letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s; text-align: center;
             touch-action: manipulation; white-space: nowrap;
         }
-        .prog-btn:hover { border-color: var(--cyan); background: rgba(0,255,204,0.08); }
-        .prog-btn.active-mode { border-color: var(--cyan); background: rgba(0,255,204,0.2); color: var(--cyan); }
-        .prog-btn.danger-btn:hover { border-color: var(--red); background: rgba(255,68,68,0.08); color: var(--red); }
-        .prog-btn.confirm-yes { border-color: var(--cyan); color: var(--cyan); }
-        .prog-btn.confirm-yes:hover { background: rgba(0,255,204,0.2); }
-        .prog-btn.confirm-no { border-color: var(--red); color: var(--red); }
-        .prog-btn.confirm-no:hover { background: rgba(255,68,68,0.2); }
+        .prog-btn:hover { border-color: var(--cyan); background: rgba(56,189,248,0.08); }
+        .prog-btn.active-mode { border-color: var(--cyan); background: rgba(56,189,248,0.18); color: var(--cyan); font-weight: 600; }
+        .prog-btn.danger-btn:hover { border-color: var(--red); background: rgba(248,113,113,0.08); color: var(--red); }
+        .prog-btn.confirm-yes { border-color: var(--cyan); color: var(--cyan); font-weight: 600; }
+        .prog-btn.confirm-yes:hover { background: rgba(56,189,248,0.18); }
+        .prog-btn.confirm-no { border-color: var(--red); color: var(--red); font-weight: 600; }
+        .prog-btn.confirm-no:hover { background: rgba(248,113,113,0.18); }
         .prog-btn:disabled { opacity: .3; cursor: not-allowed; }
         
         .bank-selector {
             display: flex; align-items: center; justify-content: space-between; gap: 8px;
-            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-            padding: 6px 12px; margin-bottom: 10px; flex-wrap: wrap;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+            padding: 8px 12px; margin-bottom: 10px; flex-wrap: wrap;
         }
-        .bank-num { font-size: 0.8rem; color: var(--cyan); font-weight: bold; }
+        .bank-num { font-size: 0.85rem; color: var(--cyan); font-weight: 700; }
         .arrow-btn {
             background: var(--surface); border: 1px solid var(--border); color: var(--text);
-            width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-weight: bold;
+            width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-weight: 700;
             display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
         .arrow-btn:hover { border-color: var(--cyan); color: var(--cyan); }
@@ -297,42 +307,42 @@
         .delete-confirm-box {
             display: none;
             width: 100%;
-            background: rgba(255,68,68,0.06);
+            background: rgba(248,113,113,0.06);
             border: 1px solid var(--red);
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 12px;
             margin-top: 8px;
             text-align: center;
         }
         .delete-confirm-box.show { display: block; }
         .delete-confirm-title {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--red);
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             margin-bottom: 8px;
-            font-weight: bold;
+            font-weight: 700;
         }
 
         #quick-type-panel, #custom-creator-panel { grid-column: 1 / -1; }
 
         .creator-form { display: flex; gap: 10px; flex-wrap: wrap; }
         .cmd-input {
-            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-            padding: 10px 12px; color: var(--text); font-family: inherit; font-size: 0.8rem;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+            padding: 10px 14px; color: var(--text); font-family: inherit; font-size: 0.8rem;
             outline: none; transition: border-color 0.2s; min-width: 120px;
         }
         .cmd-input:focus { border-color: var(--cyan); }
         #quick-type-cmd { flex: 1 1 240px; }
-        #custom-label { flex: 1 1 180px; }
+        #custom-label { flex: 1 1 160px; }
         #custom-cmd   { flex: 2 1 240px; }
 
         .add-btn {
             padding: 10px 16px; background: transparent; border: 1px solid var(--cyan);
-            color: var(--cyan); font-family: inherit; font-size: 0.75rem; letter-spacing: 1px;
-            cursor: pointer; border-radius: 6px; transition: all 0.2s; white-space: nowrap; flex: 1 1 auto;
+            color: var(--cyan); font-family: inherit; font-weight: 600; font-size: 0.75rem; letter-spacing: 1px;
+            cursor: pointer; border-radius: 8px; transition: all 0.2s; white-space: nowrap; flex: 1 1 auto;
             touch-action: manipulation;
         }
-        .add-btn:hover { background: rgba(0,255,204,.1); box-shadow: 0 0 10px rgba(0,255,204,.2); }
+        .add-btn:hover { background: rgba(56,189,248,.1); box-shadow: 0 0 10px rgba(56,189,248,.2); }
         .add-btn:disabled { opacity: .3; cursor: not-allowed; border-color: var(--border); color: var(--dim); box-shadow: none; }
 
         #quick-panel { grid-column: 1 / -1; }
@@ -341,50 +351,50 @@
         .qbtn-wrapper { position: relative; display: flex; width: 100%; }
 
         .qbtn {
-            width: 100%; padding: 14px 6px; background: var(--surface2); border: 1px solid var(--border);
-            border-radius: 6px; color: var(--text); font-family: inherit; font-size: 0.75rem;
-            letter-spacing: 1px; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column;
+            width: 100%; padding: 14px 8px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: inherit; font-weight: 500; font-size: 0.75rem;
+            letter-spacing: 0.5px; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column;
             align-items: center; gap: 6px; touch-action: manipulation;
         }
-        .qbtn .icon { font-size: 1.4rem; }
-        .qbtn .kw   { font-size: 0.6rem; color: var(--dim); word-break: break-all; text-align: center; }
-        .qbtn:hover  { border-color: var(--cyan); background: rgba(0,255,204,.05); }
+        .qbtn .icon { font-size: 1.3rem; }
+        .qbtn .kw   { font-size: 0.65rem; color: var(--dim); word-break: break-all; text-align: center; }
+        .qbtn:hover  { border-color: var(--cyan); background: rgba(56,189,248,.06); }
         .qbtn:active { transform: scale(.96); }
         .qbtn:disabled { opacity: .3; cursor: not-allowed; }
 
         .del-btn {
-            position: absolute; top: 2px; right: 2px; background: none; border: none;
+            position: absolute; top: 4px; right: 4px; background: none; border: none;
             color: var(--dim); font-size: 1rem; cursor: pointer; padding: 2px 6px; line-height: 1;
-            border-radius: 3px; transition: color 0.2s, background 0.2s; touch-action: manipulation;
+            border-radius: 4px; transition: color 0.2s, background 0.2s; touch-action: manipulation;
         }
-        .del-btn:hover { color: var(--red); background: rgba(255,68,68,0.15); }
+        .del-btn:hover { color: var(--red); background: rgba(248,113,113,0.15); }
 
         #log-panel { grid-column: 1 / -1; }
 
         .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .clear-btn {
-            font-size: 0.65rem; letter-spacing: 1px; color: var(--dim); background: none; border: none;
-            cursor: pointer; font-family: inherit; touch-action: manipulation;
+            font-size: 0.7rem; letter-spacing: 1px; color: var(--dim); background: none; border: none;
+            cursor: pointer; font-family: inherit; font-weight: 500; touch-action: manipulation;
         }
         .clear-btn:hover { color: var(--text); }
 
         #log {
-            background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-            padding: 10px; height: 130px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 3px;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px; height: 130px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 4px;
         }
 
         .entry {
-            font-size: 0.72rem; padding: 2px 6px; margin-bottom: 2px; border-left: 2px solid var(--border);
+            font-size: 0.75rem; padding: 2px 6px; margin-bottom: 2px; border-left: 2px solid var(--border);
             line-height: 1.4; word-break: break-word;
         }
         .entry.sent  { border-color: var(--cyan); color: var(--cyan); }
         .entry.err   { border-color: var(--red);  color: var(--red); }
         .entry.info  { border-color: var(--border); color: var(--dim); }
-        .entry .ts   { opacity: .45; margin-right: 6px; }
+        .entry .ts   { opacity: .5; margin-right: 6px; }
 
         footer {
-            text-align: center; padding: 12px; font-size: 0.62rem; color: var(--dim);
-            border-top: 1px solid var(--border); letter-spacing: 1px; line-height: 1.5;
+            text-align: center; padding: 16px; font-size: 0.68rem; color: var(--dim);
+            border-top: 1px solid var(--border); letter-spacing: 1px; line-height: 1.5; font-weight: 500;
         }
 
         @media (max-width: 680px) {
@@ -403,7 +413,7 @@
 <body>
 
 <header>
-    <div class="logo"> DMX <em>VOICE & SURFACE</em> HUB</div>
+    <div class="logo">DMX HUB</div>
     <div id="header-status">
         <div class="dot" id="dot"></div>
         <span id="status-lbl">DISCONNECTED</span>
@@ -411,7 +421,6 @@
 </header>
 
 <main>
-
     <div class="card" id="ble-panel">
         <div class="card-title">Bluetooth Connection</div>
         <button id="connect-btn" onclick="toggleConnect()">[ CONNECT ]</button>
@@ -428,7 +437,6 @@
         <div id="transcript">awaiting voice input...</div>
     </div>
 
-    <!-- Quick Type Command Card -->
     <div class="card" id="quick-type-panel">
         <div class="card-title">Quick Type Command</div>
         <div class="creator-form">
@@ -437,7 +445,6 @@
         </div>
     </div>
 
-    <!-- Custom Command Creator Card -->
     <div class="card" id="custom-creator-panel">
         <div class="card-title">Add Custom Command</div>
         <div class="creator-form">
@@ -447,11 +454,9 @@
         </div>
     </div>
 
-    <!-- Quick Commands Grid Card -->
     <div class="card" id="quick-panel">
         <div class="card-title">Quick Commands</div>
         <div class="quick-grid" id="quick-grid">
-            
             <div class="qbtn-wrapper">
                 <button class="qbtn" data-cmd="white" onclick="qSend(this)" disabled>
                     <span class="icon">💡</span>
@@ -476,7 +481,6 @@
         </div>
     </div>
 
-    <!-- Target Fixture & Fader Controller -->
     <div class="card full-width">
         <div class="card-title">Target Fixture Selection (Multi-Select Supported)</div>
         <div class="info-row" style="margin-bottom: 12px;">
@@ -495,7 +499,6 @@
         </div>
 
         <div class="fader-grid">
-            <!-- CH 1 -->
             <div class="fader-card">
                 <label>CH 1<br>DIMMER</label>
                 <div class="fader-btn-row">
@@ -511,7 +514,6 @@
                 </div>
                 <span class="fader-val" id="v-1">0</span>
             </div>
-            <!-- CH 2 -->
             <div class="fader-card">
                 <label>CH 2<br>RED</label>
                 <div class="fader-btn-row">
@@ -527,7 +529,6 @@
                 </div>
                 <span class="fader-val" id="v-2">0</span>
             </div>
-            <!-- CH 3 -->
             <div class="fader-card">
                 <label>CH 3<br>GREEN</label>
                 <div class="fader-btn-row">
@@ -543,7 +544,6 @@
                 </div>
                 <span class="fader-val" id="v-3">0</span>
             </div>
-            <!-- CH 4 -->
             <div class="fader-card">
                 <label>CH 4<br>BLUE</label>
                 <div class="fader-btn-row">
@@ -559,7 +559,6 @@
                 </div>
                 <span class="fader-val" id="v-4">0</span>
             </div>
-            <!-- CH 5 -->
             <div class="fader-card">
                 <label>CH 5<br>STROBE</label>
                 <div class="fader-btn-row">
@@ -575,7 +574,6 @@
                 </div>
                 <span class="fader-val" id="v-5">0</span>
             </div>
-            <!-- CH 6 -->
             <div class="fader-card">
                 <label>CH 6<br>SPECIAL</label>
                 <div class="fader-btn-row">
@@ -593,13 +591,11 @@
             </div>
         </div>
 
-        <!-- Global Program Controls -->
         <div class="prog-btn-row">
             <button class="prog-btn" id="enter-programming-btn" onclick="triggerEnterProgramming()" disabled>ENTER PROGRAMMING</button>
             <button class="prog-btn pctrl" id="exit-program-btn" onclick="triggerExitProgram()" disabled>EXIT PROGRAM</button>
         </div>
 
-        <!-- Bank Programming Section -->
         <div class="prog-sub-title">Bank Programming</div>
         <div class="prog-btn-row">
             <button class="prog-btn prog-entry-ctrl" id="enter-bank-btn" onclick="enterBankProgramming()" disabled>ENTER BANK PROGRAMMING</button>
@@ -611,7 +607,6 @@
             <button class="prog-btn bank-pctrl" onclick="send('next')" disabled>NEXT BANK</button>
         </div>
 
-        <!-- Scene Replace Section with Confirmation -->
         <div class="bank-selector" style="margin-bottom: 10px;">
             <div class="bank-selector-nav" style="display:flex; align-items:center; gap:8px;">
                 <button class="arrow-btn bank-pctrl" onclick="changeSceneNum(-1)" disabled>◄</button>
@@ -622,7 +617,6 @@
                 <button class="prog-btn bank-pctrl" style="flex:1 1 auto; max-width: 180px;" onclick="sendReplaceScene()" disabled>REPLACE SCENE</button>
             </div>
 
-            <!-- Replace Confirmation Box -->
             <div id="replace-confirm-box" class="delete-confirm-box">
                 <div class="delete-confirm-title" id="replace-confirm-lbl">CONFIRM REPLACE SCENE 1?</div>
                 <div class="prog-btn-row" style="margin-bottom:0;">
@@ -632,7 +626,6 @@
             </div>
         </div>
 
-        <!-- Bank Control Selector -->
         <div class="bank-selector">
             <div class="bank-selector-nav" style="display:flex; align-items:center; gap:8px;">
                 <button class="arrow-btn bank-pctrl" onclick="changeBank('prog', -1)" disabled>◄</button>
@@ -643,7 +636,6 @@
                 <button class="prog-btn bank-pctrl danger-btn" style="flex:1 1 auto; max-width: 150px;" onclick="promptDeleteBank('prog')" disabled>DELETE BANK</button>
             </div>
 
-            <!-- Delete Confirmation Box -->
             <div id="delete-confirm-box" class="delete-confirm-box">
                 <div class="delete-confirm-title" id="delete-confirm-lbl">DELETE BANK 1 FROM PROGRAMMING?</div>
                 <div class="prog-btn-row" style="margin-bottom:0;">
@@ -653,7 +645,6 @@
             </div>
         </div>
 
-        <!-- Chase Programming Section -->
         <div class="prog-sub-title">Chase Programming</div>
         <div class="prog-btn-row">
             <button class="prog-btn prog-entry-ctrl" id="enter-chase-btn" onclick="enterChaseProgramming()" disabled>ENTER CHASE PROGRAMMING</button>
@@ -675,7 +666,6 @@
                 <button class="prog-btn chase-pctrl danger-btn" style="flex:1 1 auto; max-width: 150px;" onclick="promptDeleteBank('chase')" disabled>DELETE BANK</button>
             </div>
 
-            <!-- Confirmation Box -->
             <div id="delete-confirm-box-chase" class="delete-confirm-box">
                 <div class="delete-confirm-title" id="delete-confirm-lbl-chase">DELETE BANK 1 FROM CHASE?</div>
                 <div class="prog-btn-row" style="margin-bottom:0;">
@@ -693,7 +683,6 @@
         </div>
         <div id="log"></div>
     </div>
-
 </main>
 
 <footer>REQUIRES GOOGLE CHROME &nbsp;·&nbsp; Web Bluetooth + Speech Recognition &nbsp;·&nbsp; ESP32-S3 DMX Controller</footer>
@@ -705,22 +694,22 @@ const TX_UUID  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
 const STEP_VALUES = [0, 50, 75, 100, 125, 150, 175, 200, 225, 255];
 
-let bleDevice        = null;
-let rxChar           = null;
-let connected        = false;
-let listening        = false;
-let recog            = null;
-let isStarting       = false;
-let customCmds       = [];
+let bleDevice         = null;
+let rxChar            = null;
+let connected         = false;
+let listening         = false;
+let recog             = null;
+let isStarting        = false;
+let customCmds        = [];
 
 let isProgModeActive  = false;
-let activeSubMode     = null; // 'bank' or 'chase'
+let activeSubMode     = null;
 
 let progSelectedBank  = 1;
 let chaseSelectedBank = 1;
 let selectedSceneNum  = 1;
 
-let fixStates        = {1: true, 2: false, 3: false, 4: false};
+let fixStates         = {1: true, 2: false, 3: false, 4: false};
 
 let cmdQueue = [];
 let isSending = false;
@@ -942,7 +931,7 @@ async function processQueue() {
 function qSend(btn) {
     const cmd = btn.getAttribute('data-cmd');
     btn.style.borderColor = 'var(--cyan)';
-    btn.style.background  = 'rgba(0,255,204,0.12)';
+    btn.style.background  = 'rgba(56,189,248,0.12)';
     setTimeout(() => {
         btn.style.borderColor = '';
         btn.style.background  = '';
@@ -1255,7 +1244,7 @@ function initSpeechEngine() {
 }
 
 function flashSent(el) {
-    el.style.background = 'rgba(0,255,204,0.15)';
+    el.style.background = 'rgba(56,189,248,0.15)';
     el.style.transition = 'background 0s';
     setTimeout(() => {
         el.style.transition = 'background 0.6s';
